@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>常见问题 · Vicon Nexus Python SDK</title>
+<meta name="description" content="连接失败、Python 版本、numpy 兼容性、性能、时间戳与已知缺陷排查。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span>常见问题</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>常见问题</h1>
+        <p class="lede">
+          按“症状 → 原因 → 处理”组织。大部分问题来自三处：环境位数/版本、错误处理太安静、utils 包的历史缺陷。
+        </p>
+
+        <h2 id="connect">连接与安装</h2>
+
+        <h3 id="q-ioerror">构造 <code>ViconNexus()</code> 抛 <code>IOError: Unable to connect to Nexus</code></h3>
+        <table>
+          <thead><tr><th style="width:210px">可能原因</th><th>处理</th></tr></thead>
+          <tbody>
+            <tr><td>Nexus 没启动 / 未登录完成</td><td>先手工打开 Nexus，进到主界面再跑脚本</td></tr>
+            <tr><td>连的是远程主机</td><td>确认 <code>ViconNexus('host')</code> 主机名解析、防火墙放行</td></tr>
+            <tr><td>版本不匹配</td><td>用 <code>GetServerInfo()</code> 核对；SDK 与 Nexus 大版本需一致</td></tr>
+            <tr><td>Nexus 正在 live 模式或正在跑 pipeline</td><td>停止采集、等 pipeline 结束后重试</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="q-dll">导入时报 <code>DLL load failed</code> / <code>ImportError: cannot import name _NexusClient3</code></h3>
+        <ul>
+          <li>Python 位数与 <code>.pyd</code> 不匹配——SDK 只有 64 位包，必须用 64 位解释器。</li>
+          <li>只拷贝了 <code>.py</code>，没带 <code>_NexusClient3.pyd</code> 与同目录 <code>boost_*.dll</code> / <code>ViconSDKClientCPP.dll</code>。</li>
+          <li>用 <code>pip install</code> 装包，而不是手工复制单个文件——<code>MANIFEST.in</code> 会把二进制一起装进去。</li>
+        </ul>
+<pre><code>python -c "import sys; print(sys.maxsize &gt; 2**32)"   # 必须是 True（64 位）</code></pre>
+
+        <h3 id="q-numpy">utils 报 <code>module 'numpy' has no attribute 'long'</code></h3>
+        <p>
+          <code>viconnexusutils</code> 用到了 <code>np.long</code> 与 <code>np.bool</code>，
+          这两个别名在 numpy 1.24 被移除。
+        </p>
+<pre><code>:: 方案一：钉旧版 numpy
+pip install "numpy&lt;1.24"
+
+:: 方案二：改源码（两处替换，全局搜索即可）
+::   np.long  → int
+::   np.bool  → bool</code></pre>
+
+        <h3 id="q-chinese">中文路径 / 中文受试者名出错</h3>
+        <p>
+          门面层对所有字符串入参做了 <code>encode('utf-8')</code>，理论上支持非 ASCII。
+          但 Python 2 下源文件默认按 ASCII 解码，脚本里出现中文必须声明编码：
+        </p>
+<pre><code># -*- coding: utf-8 -*-
+from __future__ import unicode_literals</code></pre>
+        <p>Python 3 下把脚本存为 UTF-8 即可。仍然失败时，先在 Nexus 里改成纯 ASCII 名称验证是不是编码问题。</p>
+
+        <h2 id="python3">Python 2 与 Python 3</h2>
+        <table>
+          <thead><tr><th style="width:230px">现象</th><th>原因与处理</th></tr></thead>
+          <tbody>
+            <tr><td>示例脚本 <code>SyntaxError</code></td><td>官方示例是 Python 2 语法（<code>print 'x'</code>、<code>xrange</code>、<code>sys.exit</code> 后无括号）。改成函数式 <code>print()</code>、<code>range</code>。</td></tr>
+            <tr><td><code>b'Colin'</code> 形式的字符串</td><td>底层要 bytes；如果你直接调 <code>vicon.Client.*</code>，需自己 <code>encode</code>。</td></tr>
+            <tr><td>返回值是 <code>bytes</code></td><td>只在绕过门面层时出现。门面层用 <code>_get_safe_string_value()</code> 统一解码为 <code>str</code>。</td></tr>
+            <tr><td>整数除法差异</td><td><code>deviceRate / rate</code> 在 Py2 是整除、Py3 是浮点。需要整数请写 <code>//</code>，需要浮点就保持 <code>/</code> 并显式 <code>int()</code> 后用于 <code>range</code>。</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="errors">错误处理</h2>
+
+        <p>
+          SDK 的错误模型很“安静”：<strong>方法不抛异常，而是返回 <code>None</code> 或空列表，
+          同时把原因打印到 <code>stderr</code></strong>。因此写健壮脚本的关键不是 <code>try/except</code>，
+          而是<strong>读回校验</strong>。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:250px">你可能看到的输出</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td><code>Subject not found</code> 之类字符串</td><td>底层 <code>ResultString()</code> 被直接打印</td></tr>
+            <tr><td>空列表 / 长度 0</td><td>读取失败或对象不存在（不是“没有数据”——没有数据会返回等长的 <code>False</code>）</td></tr>
+            <tr><td>没有输出但数据没变</td><td>写入失败，异常被吞</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>def write_trajectory_safe(vicon, subject, marker, x, y, z, e):
+    vicon.GenerateErrors = False
+    try:
+        vicon.SetTrajectory(subject, marker, x, y, z, e)
+        got = vicon.GetTrajectory(subject, marker)
+    finally:
+        vicon.GenerateErrors = True
+
+    if len(got[0]) != len(x) or got[1][0] != y[0]:
+        raise RuntimeError('写入未生效: ' + subject + '/' + marker)</code></pre>
+
+        <div class="tip">
+          <b>三条实践</b>
+          <ol style="margin:6px 0 0">
+            <li>批量任务开始前用 <code>GetSubjectNames()</code> / <code>GetModelOutputNames()</code> 校验目标存在。</li>
+            <li>写入后抽样读回一帧比对。</li>
+            <li>用 <code>vicon.GenerateErrors = False</code> 压噪音，但要配合读回校验，否则错误完全不可见。</li>
+          </ol>
+        </div>
+
+        <h2 id="performance">性能</h2>
+        <table>
+          <thead><tr><th style="width:230px">反模式</th><th>替代</th></tr></thead>
+          <tbody>
+            <tr><td>逐帧 <code>SetTrajectoryAtFrame</code> 写一整条</td><td><code>SetTrajectory</code> 一次写完</td></tr>
+            <tr><td>逐帧 <code>SetDeviceChannelAtFrame</code></td><td><code>SetDeviceChannel</code>（源码明确警告前者更慢）</td></tr>
+            <tr><td>对每个受试者重复 <code>GetModelOutputDetails</code></td><td>缓存到字典，一次遍历即可</td></tr>
+            <tr><td>在 Nexus 内部脚本里跑大循环</td><td>挪到外部进程，用 <code>OpenTrial</code>/<code>SaveTrial</code> 批处理</td></tr>
+          </tbody>
+        </table>
+        <p>
+          经验值：单次调用是进程内 IPC，开销主要来自往返次数，而不是数据量。
+          整条读写（几千帧 × 几十通道）通常远快于逐帧循环。
+        </p>
+
+        <h2 id="save">改了数据但文件没变</h2>
+        <p>
+          <code>Set*</code> 只改内存中的试次。落盘需要 <code>SaveTrial(timeout)</code>，
+          且必须在<strong>外部</strong> Python 进程中调用——Nexus 内部脚本调用它会失败或卡住。
+        </p>
+<pre><code>vicon.SetModelOutput(subject, 'MyOutput', data, exists)
+vicon.SaveTrial(30)          # 外部进程才行
+# 或者：跑到最后统一保存；内部脚本则请用户在 Nexus 里手动保存</code></pre>
+
+        <h2 id="timeouts">timeout 与 pipeline</h2>
+        <ul>
+          <li><code>OpenTrial</code> / <code>SaveTrial</code> / <code>CloseTrial</code> / <code>RunPipeline</code> 的 <code>timeout</code>
+              只是<strong>客户端等待上限</strong>；超时后宿主里的动作可能仍在进行。</li>
+          <li>超时后不要立刻发下一条命令，先轮询状态（例如 <code>GetTrialName()</code> 是否已变）。</li>
+          <li>pipeline 运行期间不能打开/保存试次，也不能再启动一个 pipeline。</li>
+          <li>未保存数据时 <code>OpenTrial</code> 可能弹出宿主对话框阻塞自动化——先 <code>SaveTrial</code>。</li>
+        </ul>
+
+        <h2 id="threading">多线程 / 并发</h2>
+        <p>
+          客户端与 Nexus 之间是串行命令模型。多线程使用同一个 <code>ViconNexus</code> 实例会出现
+          响应错位，请用单线程 + 队列，或为每个线程各建一个连接（不推荐，宿主侧仍是串行）。
+        </p>
+
+        <h2 id="known-issues">已知问题与文档勘误</h2>
+
+        <h3 id="docstring-bugs">源码 docstring 与实际行为不一致</h3>
+        <table>
+          <thead><tr><th style="width:290px">方法</th><th>问题</th></tr></thead>
+          <tbody>
+            <tr><td><a href="api-viconnexus.html#GetSubjectParamDetails"><code>GetSubjectParamDetails</code></a></td><td>返回 5 个值，示例只解包 4 个</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetAnalysisParamDetails"><code>GetAnalysisParamDetails</code></a></td><td>返回 3 个值，示例按 4 个解包</td></tr>
+            <tr><td><a href="api-viconnexus.html#CreateAnEvent"><code>CreateAnEvent</code></a></td><td>示例里 context 与 event 顺序写反</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetSplineResults"><code>GetSplineResults</code></a></td><td>参数表是从 <code>SubmitSplineTrajectory</code> 复制的，实际只有一个参数</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetDeviceIDFromName"><code>GetDeviceIDFromName</code></a></td><td>文档写返回 string，实际是整型 ID</td></tr>
+            <tr><td><code>GetAnalysisParam</code> 等</td><td>示例里仍用 Python 2 的 <code>print</code> 语句</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="utils-bugs">viconnexusutils 1.0.0 的缺陷</h3>
+        <table>
+          <thead><tr><th style="width:270px">位置</th><th>现象</th></tr></thead>
+          <tbody>
+            <tr><td><code>NexusAngles.Read</code></td><td>布尔掩码维度不匹配，帧数 &gt; 3 时抛 <code>IndexError</code></td></tr>
+            <tr><td><code>NexusAngles.mean</code></td><td>写入不存在的 <code>_position</code>，结果全 <code>NaN</code></td></tr>
+            <tr><td><code>NexusSegment.Scale</code></td><td>返回 <code>_orientation</code> 而非 <code>_scale</code></td></tr>
+            <tr><td><code>NexusSegment.mean</code></td><td>末尾 <code>pass</code>，返回 <code>None</code></td></tr>
+            <tr><td><code>NexusSegment.__rmul__</code></td><td>返回 <code>None</code>（写 <code>seg * traj</code> 会得到 None）</td></tr>
+            <tr><td><code>SetPosition/SetOrientation/SetScale</code></td><td>帧索引未 <code>-1</code>，与读取方法不一致（0 基 vs 1 基）</td></tr>
+            <tr><td><code>Write</code> 补帧</td><td><code>frames+1:</code> 切片导致跳过一帧</td></tr>
+          </tbody>
+        </table>
+        <p>处理建议：涉及这些路径时直接用 <code>ViconNexus</code> + numpy 自己写，不要绕 utils。</p>
+
+        <h3 id="example-bugs">示例脚本的小坑</h3>
+        <ul>
+          <li><code>DetectFootEvents.py</code>：<code>trajExists[idx]</code> 用 1 基帧号索引 0 基列表，偏一帧；<code>SamplesPerFrame</code> 在 Py3 下变成 float。</li>
+          <li><code>GapFilling/ProcessGaps.py</code>：缺口长度为 0 时 <code>E</code> 未定义。</li>
+          <li>多数示例不调用 <code>Disconnect()</code>，长时间反复运行时建议自己补上。</li>
+        </ul>
+
+        <h2 id="deploy">关于本文档站点</h2>
+        <table>
+          <thead><tr><th style="width:200px">问题</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>能离线看吗</td><td>能。双击 <code>docs/index.html</code>，无 CDN、无构建步骤。</td></tr>
+            <tr><td>怎么发布</td><td>推到 GitHub，仓库 Settings → Pages 选 <code>/docs</code>；或由仓库内的 Action 自动部署。</td></tr>
+            <tr><td>为什么不用 Sphinx / Doxygen</td><td>那样需要额外安装构建工具。这里的方案只依赖浏览器。</td></tr>
+            <tr><td>搜索怎么工作</td><td><code>docs/assets/search-index.js</code> 是手工维护的索引，纯前端匹配，不走网络。</td></tr>
+          </tbody>
+        </table>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

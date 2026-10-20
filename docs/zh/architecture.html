@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构与分层 · Vicon Nexus Python SDK</title>
+<meta name="description" content="ViconNexus 门面、SWIG 客户端、C++ DLL 与 Nexus 之间的调用链，以及源码目录结构。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span>架构与分层</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>架构与分层</h1>
+        <p class="lede">
+          理解 SDK 的四个层次，能解释绝大多数“为什么这个调用没反应 / 报这个错”的问题。
+        </p>
+
+        <h2 id="layers">调用链</h2>
+<pre><code>你的代码
+  │  from viconnexusapi import ViconNexus
+  ▼
+┌──────────────────────────────────────────────────────────────┐
+│ L1  门面层  viconnexusapi.ViconNexus.ViconNexus              │
+│     · 负责 Python ↔ C++ 的类型搬运：list ↔ vector、str ↔     │
+│       SafeString、dict ↔ map、异常/错误打印（GenerateErrors） │
+│     · 面向用户的方法名与文档字符串都在这一层                   │
+└──────────────────────────────────────────────────────────────┘
+  │  self.Client = nexusclient.ViconNexusClient()
+  ▼
+┌──────────────────────────────────────────────────────────────┐
+│ L2  SWIG 绑定  viconnexusapi.NexusClient3 (Py3)               │
+│                viconnexusapi.NexusClient  (Py2)               │
+│     · 自动生成，1:1 映射 C++ 接口，返回 Output_* 结构体        │
+│     · 同时提供 vectord / vectori / vectorb / SafeString 等容器 │
+└──────────────────────────────────────────────────────────────┘
+  │  _NexusClient3.ViconNexusClient_GetTrajectory(...)
+  ▼
+┌──────────────────────────────────────────────────────────────┐
+│ L3  原生扩展  _NexusClient3.pyd / _NexusClient.pyd             │
+│     依赖 boost_python27 / boost_system / boost_thread 等 DLL   │
+└──────────────────────────────────────────────────────────────┘
+  │  进程内 IPC
+  ▼
+┌──────────────────────────────────────────────────────────────┐
+│ L4  通信层  ViconSDKClientCPP.dll / NexusSDKClientCPP.dll      │
+│     · 与正在运行的 Nexus 进程建立连接、发送命令、取回结果       │
+└──────────────────────────────────────────────────────────────┘
+  ▼
+Vicon Nexus 宿主应用（真正持有试次数据）</code></pre>
+
+        <h2 id="responsibilities">各层职责</h2>
+        <table>
+          <thead><tr><th style="width:150px">层</th><th style="width:260px">文件</th><th>关注点</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>L1 门面</td>
+              <td><code>viconnexusapi/ViconNexus.py</code><br><code>ViconUtils.py</code></td>
+              <td>类型转换、错误打印、<code>NaN</code> 语义处理、Python 2/3 字符串差异</td>
+            </tr>
+            <tr>
+              <td>L2 绑定</td>
+              <td><code>NexusClient3.py</code>（~1856 行）<br><code>NexusClient.py</code>（Py2）</td>
+              <td>接口映射、<code>Output_*</code> 结果类型、容器类型；不要手改</td>
+            </tr>
+            <tr>
+              <td>L3 扩展</td>
+              <td><code>_NexusClient3.pyd</code></td>
+              <td>位数必须与 Python 解释器一致（x64）</td>
+            </tr>
+            <tr>
+              <td>L4 通信</td>
+              <td><code>ViconSDKClientCPP.dll</code><br><code>NexusSDKClientCPP.dll</code></td>
+              <td>主机/端口、超时、命令序列化；版本兼容性在这一层决定</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="entrypoints">入口选择：Python 2 还是 3</h2>
+        <p>
+          <code>ViconNexus.py</code> 顶部按解释器版本选择底层模块，对使用者透明：
+        </p>
+<pre><code>if sys.version_info &gt; (3, 0):
+    from . import NexusClient3 as nexusclient     # 绑 _NexusClient3.pyd
+    ...
+else:
+    from . import NexusClient as nexusclient      # 绑 _NexusClient.pyd
+    ...</code></pre>
+        <p>
+          两个绑定暴露同一套方法名，所以业务代码不需要分支。但字符串在 Python 2 下是
+          <code>str</code>（bytes），因此门面层用 <code>_get_safe_string_value()</code>
+          统一 <code>decode('utf-8')</code>，你拿到的永远是 <code>str</code>。
+          反过来，所有入参在传给底层前都会 <code>.encode('utf-8')</code>。
+        </p>
+
+        <h2 id="results">返回值：<code>Output_Result</code> 家族</h2>
+        <p>
+          每个底层命令都返回一个 <code>Output_*</code> 对象，它们都继承自
+          <code>Output_Result</code>，因此都有：
+        </p>
+        <table>
+          <thead><tr><th style="width:220px">成员</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>Error()</code></td><td>bool，命令是否失败</td></tr>
+            <tr><td><code>ResultString()</code></td><td><code>SafeString</code>，失败原因文本</td></tr>
+          </tbody>
+        </table>
+        <p>再各自附加数据成员，例如 <code>Output_GetTrajectory</code> 带
+          <code>X/Y/Z/E</code>，<code>Output_GetSubjectNames</code> 带 <code>Names/Models/Active</code>。
+          门面层正是把这些成员翻译成 Python 列表/元组返回给你的。</p>
+
+        <h2 id="flow">一次 <code>GetTrajectory</code> 的完整旅程</h2>
+<pre><code># 你的代码
+x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+
+# L1：编码字符串 → 调 L2 → 检查错误 → 展开 4 个 vector 为 list
+def GetTrajectory(self, subject, marker):
+    data = self.Client.GetTrajectory(subject.encode('utf-8'),
+                                     marker.encode('utf-8'))
+    if data.Error() and self.GenerateErrors:
+        print(ViconNexus._get_safe_string_value(data.ResultString), file=sys.stderr)
+    x, y, z, e = list(data.X), list(data.Y), list(data.Z), list(data.E)
+    return x, y, z, e
+
+# L2：SWIG 转发到 _NexusClient3
+def GetTrajectory(self, i_rSubjectName, i_rMarkerName):
+    return _NexusClient3.ViconNexusClient_GetTrajectory(
+        self, i_rSubjectName, i_rMarkerName)</code></pre>
+
+        <div class="note">
+          <b>注意</b>
+          失败时 <code>data.X</code> 等仍是空容器，方法会返回四个<strong>空列表</strong>而不是抛异常。
+          所以“读不到数据”通常表现为长度为 0，而不是报错。
+        </div>
+
+        <h2 id="layout">源码目录</h2>
+<pre><code>ViconNexus2.12_PythonSDK/
+├── install_vicon_nexus_api.bat      # pip install 核心包
+├── install_vicon_nexus_utils.bat    # pip install utils 包
+├── uninstall_vicon_nexus_api.bat
+├── uninstall_vicon_nexus_utils.bat
+├── example_scripts/                 # 8 个官方示例
+│   ├── DetectFootEvents.py
+│   ├── DisplayModelOutputInfo.py
+│   ├── DisplaySubjectInfo.py
+│   ├── DisplayTrialInfo.py
+│   ├── NexusConformityTest.py
+│   ├── SimpleMidpoint.py
+│   └── GapFilling/
+│       ├── FillGaps.py
+│       └── ProcessGaps.py
+├── viconnexusapi/
+│   ├── VERSION (1.0.3)  LICENSE  CHANGES.rst  README.rst
+│   ├── setup.py  MANIFEST.in
+│   ├── viconnexusapi/               # ← 实际导入的包
+│   │   ├── ViconNexus.py            # L1 门面
+│   │   ├── ViconUtils.py            # 数学 / 建模工具
+│   │   ├── NexusForcePlate.py       # 数据类
+│   │   ├── NexusEyeTracker.py       # 数据类
+│   │   ├── NexusClient3.py          # L2 SWIG (Py3)
+│   │   ├── NexusClient.py           # L2 SWIG (Py2)
+│   │   ├── _NexusClient3.pyd        # L3 (Py3)
+│   │   ├── _NexusClient.pyd         # L3 (Py2)
+│   │   └── *.dll                    # boost_* / ViconSDKClientCPP / NexusSDKClientCPP
+│   └── build/lib/viconnexusapi/     # setup.py build 的中间产物，与上面同名文件重复
+└── viconnexusutils/
+    ├── VERSION (1.0.0)  setup.py
+    └── viconnexusutils/
+        ├── NexusObject.py
+        ├── NexusTrajectory.py
+        ├── NexusAngles.py
+        └── NexusSegment.py</code></pre>
+
+        <div class="tip">
+          <b>别改 build/lib</b>
+          <code>build/lib/</code> 只是打包时的拷贝产物，不会被打进最终 wheel 之外的任何地方。
+          修改行为请只改 <code>viconnexusapi/viconnexusapi/</code> 下的源码，然后重新
+          <code>pip install</code>。
+        </div>
+
+        <h2 id="packaging">打包方式</h2>
+        <p>
+          <code>setup.py</code> 读取同目录的 <code>VERSION</code> 文件作为版本号，
+          <code>find_packages()</code> 收集包，<code>include_package_data=True</code> +
+          <code>MANIFEST.in</code> 把 <code>.pyd</code>/<code>.dll</code> 一起带上。
+          这意味着：<strong>只要 wheel 是从这个目录构建的，二进制就跟着走</strong>，
+          使用者无需单独拷贝 DLL。
+        </p>
+
+        <h2 id="threading">线程与并发</h2>
+        <ul>
+          <li>客户端与 Nexus 之间是命令/响应模型，一次只能有一个命令在途。多线程并发调用需自行加锁。</li>
+          <li><code>RunPipeline</code> / <code>OpenTrial</code> 等带 <code>timeout</code> 的方法，超时只是让<strong>客户端</strong>提前返回；宿主里的操作可能仍在继续。</li>
+          <li>在 Nexus 内部脚本中执行长时间循环会阻塞 UI，建议外部进程驱动。</li>
+        </ul>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

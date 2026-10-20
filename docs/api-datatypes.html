@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data types · Vicon Nexus Python SDK</title>
+<meta name="description" content="NexusForcePlate and NexusEyeTracker: geometry and pose data structures for force plates and eye trackers.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span><a href="api-viconnexus.html">API reference</a><span class="sep">/</span>Data types</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Data types</h1>
+        <p class="lede">
+          The SDK has just two “plain data classes”, and
+          <a href="api-viconnexus.html#GetDeviceDetails"><code>GetDeviceDetails()</code></a>
+          fills both of them. They have no methods, only attributes; every field is initialised to
+          0 or an empty string on construction.
+        </p>
+
+        <h2 id="NexusForcePlate">NexusForcePlate</h2>
+        <p><code>viconnexusapi.NexusForcePlate.NexusForcePlate</code> — the geometry of a force plate.</p>
+
+        <table>
+          <thead><tr><th style="width:130px">Attribute</th><th style="width:90px">Type</th><th style="width:80px">Length</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>LocalR</code></td><td>list[float]</td><td>9</td><td>Local rotation matrix, flattened in <strong>row-major</strong> order.</td></tr>
+            <tr><td><code>LocalT</code></td><td>list[float]</td><td>3</td><td>Local translation relative to the device origin (mm).</td></tr>
+            <tr><td><code>WorldR</code></td><td>list[float]</td><td>9</td><td>Rotation matrix in world coordinates, flattened row-major.</td></tr>
+            <tr><td><code>WorldT</code></td><td>list[float]</td><td>3</td><td>Translation in world coordinates (mm).</td></tr>
+            <tr><td><code>LowerBounds</code></td><td>list[float]</td><td>3</td><td>Lower bound of the plate extent (mm), in the local coordinate frame.</td></tr>
+            <tr><td><code>UpperBounds</code></td><td>list[float]</td><td>3</td><td>Upper bound of the plate extent (mm), in the local coordinate frame.</td></tr>
+            <tr><td><code>Context</code></td><td>str</td><td>—</td><td>Context label that Nexus attaches to this plate (for example <code>Left</code>/<code>Right</code>); may be an empty string — treat it as an opaque string.</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+
+# plate centre (local)
+center = [(plate.UpperBounds[i] + plate.LowerBounds[i]) / 2.0 for i in range(3)]
+
+# plate centre (world)
+center_global = ViconUtils.Globalise(center, plate.WorldR, plate.WorldT)
+
+# plate size
+size = [plate.UpperBounds[i] - plate.LowerBounds[i] for i in range(3)]</code></pre>
+
+        <div class="note">
+          <b>The mixed-unit trap</b>
+          <code>LocalR/WorldR/WorldT</code> are in mm; but the raw values of the <code>CoP</code>
+          channels (<code>Cx/Cy/Cz</code>) may be in m, so you need <code>×1000</code> before you can
+          compare them with <code>LowerBounds/UpperBounds</code>.
+          The official <code>DetectFootEvents</code> example does exactly that inverse conversion
+          with <code>/ 1000.0</code>.
+        </div>
+
+        <h2 id="NexusEyeTracker">NexusEyeTracker</h2>
+        <p><code>viconnexusapi.NexusEyeTracker.NexusEyeTracker</code> — the mounting and offset information of an eye tracker.</p>
+
+        <table>
+          <thead><tr><th style="width:130px">Attribute</th><th style="width:90px">Type</th><th style="width:80px">Length</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>SubjectName</code></td><td>str</td><td>—</td><td>Name of the subject the eye tracker is associated with (may be empty).</td></tr>
+            <tr><td><code>SegmentName</code></td><td>str</td><td>—</td><td>Name of the segment the eye tracker is associated with (may be empty).</td></tr>
+            <tr><td><code>EyePoseT</code></td><td>list[float]</td><td>3</td><td>Eye pose translation (mm).</td></tr>
+            <tr><td><code>EyePoseR</code></td><td>list[float]</td><td>9</td><td>Eye pose rotation matrix, flattened row-major.</td></tr>
+            <tr><td><code>Offset</code></td><td>list[float]</td><td>3</td><td>Eye offset (mm).</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+if dtype == 'EyeTracker':
+    print('attached to', et.SubjectName, '/', et.SegmentName)
+    gaze_origin = ViconUtils.Globalise(et.Offset, et.EyePoseR, et.EyePoseT)</code></pre>
+
+        <h2 id="relationship">Relationship to ViconNexus methods</h2>
+        <table>
+          <thead><tr><th style="width:220px">Source method</th><th>Object produced</th></tr></thead>
+          <tbody>
+            <tr><td><a href="api-viconnexus.html#GetDeviceDetails"><code>GetDeviceDetails</code></a></td><td>5th element → <code>NexusForcePlate</code>; 6th element → <code>NexusEyeTracker</code></td></tr>
+          </tbody>
+        </table>
+        <p>
+          Both objects <strong>always</strong> exist, whatever the device type: for a force plate device the
+          <code>eyetracker</code> field is an all-zero empty shell, and vice versa. Test the type with the
+          <code>device_type</code> string.
+        </p>
+
+        <h2 id="lowlevel-types">Related low-level types</h2>
+        <p>
+          If you work with <code>vicon.Client</code> directly, you will also encounter SWIG types such as
+          <code>ForcePlate</code>, <code>EyeTracker</code>, <code>Output_*</code> and <code>SafeString</code> —
+          see <a href="api-lowlevel.html">Low-level client</a>.
+        </p>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

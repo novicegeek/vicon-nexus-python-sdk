@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>底层客户端 · Vicon Nexus Python SDK</title>
+<meta name="description" content="NexusClient3 / NexusClient：SWIG 生成的 ViconNexusClient 及其 Output_* 返回值类型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span><a href="api-viconnexus.html">API 参考</a><span class="sep">/</span>底层客户端</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>底层客户端</h1>
+        <p class="lede">
+          <code>viconnexusapi.NexusClient3</code>（Python 3）与 <code>viconnexusapi.NexusClient</code>（Python 2）
+          是 SWIG 4.0.2 自动生成的绑定层，直接映射 C++ 的 <code>ViconNexusClient</code>。
+          除非门面层缺少某个功能，否则<strong>不要直接使用</strong>：返回的是
+          <code>Output_*</code> 对象、字符串是 <code>SafeString</code>、列表是 C++ 容器。
+        </p>
+
+        <div class="warn">
+          <b>自动生成，勿手改</b>
+          文件头写明 <em>“Do not make changes to this file unless you know what you are doing—modify the SWIG interface file instead”</em>。
+          升级 SDK 时这两个文件会被整体覆盖。
+        </div>
+
+        <h2 id="ViconNexusClient">ViconNexusClient</h2>
+        <p>
+          与门面层同名的方法一一对应（少数只在底层暴露）。所有方法返回
+          <code>Output_*</code> 对象，除 <code>IsConnected</code> 等少数返回原始 <code>bool</code>。
+        </p>
+
+<pre><code>from viconnexusapi import NexusClient3
+
+raw = NexusClient3.ViconNexusClient()
+raw.Connect(b'localhost')
+print(raw.IsConnected())
+
+info = raw.GetServerInfo()            # Output_GetServerInfo
+print(info.Error(), info.MajorVersion, info.MinorVersion)
+
+raw.Disconnect()</code></pre>
+
+        <h3 id="methods">方法一览（72 个）</h3>
+
+        <table>
+          <thead><tr><th style="width:170px">分类</th><th>方法</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>连接 / 通用</td>
+              <td><code>Connect</code> <code>Disconnect</code> <code>IsConnected</code> <code>GetServerInfo</code>
+                  <code>GetCommandList</code> <code>GetCommandInfo</code> <code>ProcessRequest</code></td>
+            </tr>
+            <tr>
+              <td>试次 / 帧</td>
+              <td><code>GetFrameCount</code> <code>GetFrameRate</code> <code>GetTrialName</code> <code>GetTrialRange</code>
+                  <code>GetTrialRegionOfInterest</code> <code>SetTrialRegionOfInterest</code>
+                  <code>OpenTrial</code> <code>SaveTrial</code> <code>CloseTrial</code> <code>RunPipeline</code></td>
+            </tr>
+            <tr>
+              <td>受试者 / 骨架</td>
+              <td><code>GetSubjectNames</code> <code>SetSubjectActive</code> <code>GetMarkerNames</code>
+                  <code>GetSegmentNames</code> <code>GetRootSegment</code> <code>GetSegmentDetails</code>
+                  <code>GetJointNames</code> <code>GetJointDetails</code></td>
+            </tr>
+            <tr>
+              <td>轨迹</td>
+              <td><code>GetUnlabeledCount</code> <code>GetUnlabeled</code> <code>HasTrajectory</code>
+                  <code>GetTrajectory</code> <code>GetTrajectoryAtFrame</code>
+                  <code>SetTrajectory</code> <code>SetTrajectoryAtFrame</code></td>
+            </tr>
+            <tr>
+              <td>模型输出</td>
+              <td><code>GetModelOutputNames</code> <code>GetModelOutputDetails</code> <code>GetModelOutput</code>
+                  <code>GetModelOutputAtFrame</code> <code>SetModelOutput</code> <code>SetModelOutputAtFrame</code>
+                  <code>CreateModelOutput</code></td>
+            </tr>
+            <tr>
+              <td>参数</td>
+              <td><code>GetSubjectParamNames</code> <code>GetSubjectParamDetails</code> <code>GetSubjectParam</code>
+                  <code>SetSubjectParam</code> <code>CreateSubjectParam</code>
+                  <code>GetAnalysisParamNames</code> <code>GetAnalysisParamDetails</code> <code>GetAnalysisParam</code>
+                  <code>SetAnalysisParam</code> <code>CreateAnalysisParam</code></td>
+            </tr>
+            <tr>
+              <td>事件</td>
+              <td><code>GetEvents</code> <code>CreateAnEvent</code> <code>ClearAllEvents</code></td>
+            </tr>
+            <tr>
+              <td>设备 / 通道</td>
+              <td><code>GetDeviceIDs</code> <code>GetDeviceNames</code> <code>GetDeviceIDFromName</code>
+                  <code>GetDeviceDetails</code> <code>GetDeviceOutputIDFromName</code> <code>GetDeviceOutputDetails</code>
+                  <code>GetDeviceChannelIDFromName</code> <code>GetDeviceChannel</code>
+                  <code>GetDeviceChannelAtFrame</code> <code>GetDeviceChannelForFrame</code>
+                  <code>GetDeviceChannelGlobal</code> <code>GetDeviceChannelGlobalAtFrame</code>
+                  <code>GetDeviceChannelGlobalForFrame</code> <code>SetDeviceChannel</code>
+                  <code>SetDeviceChannelAtFrame</code></td>
+            </tr>
+            <tr>
+              <td>样条</td>
+              <td><code>SubmitSplineTrajectory</code> <code>GetSplineResults</code></td>
+            </tr>
+            <tr>
+              <td>内部 / 工具</td>
+              <td><code>AutoNumberCameras</code> <code>Crash</code> <code>AllocString</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>参数命名</b>
+          底层形参带 Hungarian 前缀：<code>i_rSubjectName</code>（输入引用字符串）、
+          <code>i_FrameNumber</code>（输入值）、<code>i_bForce</code>（输入 bool）。
+          <code>i_</code> = input，<code>r</code> = reference。门面层已经把这些名字换成了可读的形式。
+        </div>
+
+        <h2 id="ProcessRequest">通用命令通道</h2>
+        <p>
+          Nexus 的命令协议是“命令名 + 参数表”。这三个方法把协议本身暴露出来，
+          可以在不发新版 SDK 的情况下调用宿主支持的新命令。
+        </p>
+
+        <article class="api-item" id="GetCommandList">
+          <h3>GetCommandList<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">枚举宿主当前支持的全部命令名。</p>
+          <p class="ret"><strong>返回</strong> <code>Output_GetCommandList</code>，其
+            <code>CommandNames</code> 为 <code>vectorss</code>（字符串向量）。</p>
+<pre><code>res = raw.GetCommandList()
+for i in range(res.CommandNames.size()):
+    print(res.CommandNames[i].Value())</code></pre>
+        </article>
+
+        <article class="api-item" id="GetCommandInfo">
+          <h3>GetCommandInfo<span class="sig">(i_rCommandName)</span><span class="kind">读</span></h3>
+          <p class="desc">查询单条命令的签名：参数列表及每个参数的类型/名称。</p>
+          <p class="ret"><strong>返回</strong> <code>Output_GetCommandInfo</code>，含
+            <code>Type_Parameter</code> 序列。</p>
+<pre><code>info = raw.GetCommandInfo(b'GetTrajectory')
+print(info.Error(), info.ResultString().Value())</code></pre>
+        </article>
+
+        <article class="api-item" id="ProcessRequest">
+          <h3>ProcessRequest<span class="sig">(i_rCommandName, i_rInputParameters)</span><span class="kind">写</span></h3>
+          <p class="desc">按名字执行任意命令，参数以 <code>Type_Parameter</code> 列表传入。门面层的每个方法本质上都是它的特化。</p>
+          <p class="ret"><strong>返回</strong> <code>Output_ProcessRequest</code>。</p>
+          <div class="tip">
+            <b>适合做什么</b>
+            探测新版本 Nexus 增加的命令；或在门面层尚未包装某功能时先应急使用。
+            注意参数需要按 <code>GetCommandInfo</code> 声明的顺序与类型构造。
+          </div>
+        </article>
+
+        <h2 id="outputs">Output_* 返回值</h2>
+        <p>
+          所有 <code>Output_*</code> 都继承 <code>Output_Result</code>，因此固定有两个方法：
+          <code>Error()</code> 与 <code>ResultString()</code>。下面是各自附带的数据成员。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:300px">类型</th><th>附加成员</th></tr></thead>
+          <tbody>
+            <tr><td><code>Output_GetServerInfo</code></td><td><code>Program</code>、<code>MajorVersion</code>、<code>MinorVersion</code>、<code>PointVersion</code>、<code>ReleaseType</code></td></tr>
+            <tr><td><code>Output_GetTrialName</code></td><td><code>Path</code>、<code>Name</code></td></tr>
+            <tr><td><code>Output_GetTrialRange</code></td><td><code>StartFrame</code>、<code>EndFrame</code></td></tr>
+            <tr><td><code>Output_GetTrialRegionOfInterest</code></td><td><code>StartFrame</code>、<code>EndFrame</code></td></tr>
+            <tr><td><code>Output_GetSubjectNames</code></td><td><code>Names</code>、<code>Models</code>、<code>Active</code></td></tr>
+            <tr><td><code>Output_GetMarkerNames</code> / <code>…SegmentNames</code> / <code>…JointNames</code> / <code>…ModelOutputNames</code> / <code>…SubjectParamNames</code> / <code>…AnalysisParamNames</code> / <code>…DeviceNames</code></td><td><code>Names</code>（<code>vectorss</code>）</td></tr>
+            <tr><td><code>Output_GetRootSegment</code></td><td><code>SegmentName</code></td></tr>
+            <tr><td><code>Output_GetSegmentDetails</code></td><td><code>Parent</code>、<code>Children</code>、<code>Markers</code></td></tr>
+            <tr><td><code>Output_GetJointDetails</code></td><td><code>Parent</code>、<code>Child</code></td></tr>
+            <tr><td><code>Output_GetTrajectory</code> / <code>Output_GetUnlabeled</code></td><td><code>X</code>、<code>Y</code>、<code>Z</code>（<code>vectord</code>）、<code>E</code>（<code>vectorb</code>）</td></tr>
+            <tr><td><code>Output_GetTrajectoryAtFrame</code></td><td><code>X</code>、<code>Y</code>、<code>Z</code>、<code>E</code>（标量）</td></tr>
+            <tr><td><code>Output_HasTrajectory</code></td><td><code>Exists</code></td></tr>
+            <tr><td><code>Output_GetModelOutput</code></td><td><code>Data</code>（<code>map_ui_vd</code>：分量索引 → <code>vectord</code>）、<code>E</code></td></tr>
+            <tr><td><code>Output_GetModelOutputAtFrame</code></td><td><code>Data</code>（<code>vectord</code>）、<code>E</code></td></tr>
+            <tr><td><code>Output_GetModelOutputDetails</code></td><td><code>GroupName</code>、<code>ComponentNames</code>、<code>QuantityTypes</code></td></tr>
+            <tr><td><code>Output_GetSubjectParam</code> / <code>…AnalysisParam</code></td><td><code>Value</code>、<code>HasValue</code></td></tr>
+            <tr><td><code>Output_GetSubjectParamDetails</code></td><td><code>Value</code>、<code>Unit</code>、<code>DefaultValue</code>、<code>Required</code>、<code>HasValue</code></td></tr>
+            <tr><td><code>Output_GetAnalysisParamDetails</code></td><td><code>Value</code>、<code>Unit</code>、<code>HasValue</code></td></tr>
+            <tr><td><code>Output_GetEvents</code></td><td><code>FrameNumbers</code>、<code>FrameOffsets</code></td></tr>
+            <tr><td><code>Output_GetDeviceIDs</code></td><td><code>IDs</code>（<code>vectorui</code>）</td></tr>
+            <tr><td><code>Output_GetDeviceIDFromName</code></td><td><code>DeviceID</code></td></tr>
+            <tr><td><code>Output_GetDeviceDetails</code></td><td><code>Name</code>、<code>Type</code>、<code>Rate</code>、<code>DeviceOutputIDs</code>、<code>FP_*()</code>、<code>ET_*()</code></td></tr>
+            <tr><td><code>Output_GetDeviceOutputIDFromName</code></td><td><code>DeviceOutputID</code></td></tr>
+            <tr><td><code>Output_GetDeviceOutputDetails</code></td><td><code>Name</code>、<code>Type</code>、<code>UnitName</code>、<code>Ready</code>、<code>ChannelNames</code>、<code>ChannelIDs</code></td></tr>
+            <tr><td><code>Output_GetDeviceChannelIDFromName</code></td><td><code>ChannelID</code></td></tr>
+            <tr><td><code>Output_GetDeviceChannel</code> / <code>…AtFrame</code> / <code>…ForFrame</code></td><td><code>Data</code>（<code>vectord</code>）、<code>Ready</code>、<code>Rate</code></td></tr>
+            <tr><td><code>Output_GetSplineResults</code></td><td><code>X</code>、<code>Y</code>、<code>Z</code></td></tr>
+            <tr><td><code>Output_GetCommandList</code></td><td><code>CommandNames</code></td></tr>
+            <tr><td><code>Output_GetCommandInfo</code></td><td>命令参数描述</td></tr>
+            <tr><td><code>Output_ProcessRequest</code></td><td>通用结果容器</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="containers">容器与字符串类型</h2>
+
+        <table>
+          <thead><tr><th style="width:170px">类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>SafeString</code></td><td>C++ <code>std::string</code> 包装。<code>Value()</code> 取 Python <code>str</code>；<code>AllocString()</code> 从 Python 字符串构造。</td></tr>
+            <tr><td><code>vectord</code></td><td><code>double</code> 向量：<code>push_back</code>、<code>size</code>、<code>[]</code>、<code>__len__</code>、迭代。</td></tr>
+            <tr><td><code>vectori</code> / <code>vectorui</code></td><td><code>int</code> / <code>unsigned int</code> 向量。</td></tr>
+            <tr><td><code>vectorf</code></td><td><code>float</code> 向量。</td></tr>
+            <tr><td><code>vectorb</code></td><td><code>bool</code> 向量（轨迹存在性用它）。</td></tr>
+            <tr><td><code>vectorss</code></td><td><code>SafeString</code> 向量（名称列表用它）。</td></tr>
+            <tr><td><code>vectortp</code></td><td><code>Type_Parameter</code> 向量（命令参数表）。</td></tr>
+            <tr><td><code>map_ui_vd</code></td><td><code>unsigned int → vectord</code> 的映射，模型输出的多分量数据用它。</td></tr>
+            <tr><td><code>SwigPyIterator</code></td><td>上述容器的迭代器基类，一般不用直接接触。</td></tr>
+          </tbody>
+        </table>
+
+<pre><code># 手工构造模型输出数据（门面层替你做的事）
+from viconnexusapi import NexusClient3 as nc
+
+data = nc.map_ui_vd()
+for component_index in range(3):
+    values = nc.vectord()
+    for frame in range(120):
+        values.push_back(0.0)
+    data[component_index] = values
+
+exists = nc.vectorb()
+for frame in range(120):
+    exists.push_back(True)
+
+raw.SetModelOutput(b'Colin', b'MyOutput', data, exists)</code></pre>
+
+        <div class="note">
+          <b>门面层为什么需要 <code>AllocString</code></b>
+          C++ 接口的“字符串数组”参数要的是 <code>vectorss</code>，元素必须是
+          <code>SafeString</code> 而不是 Python <code>str</code>。所以
+          <code>CreateModelOutput</code> 会逐个 <code>AllocString()</code>，
+          见 <a href="architecture.html#flow">调用链</a>。
+        </div>
+
+        <h2 id="internals">内部与调试方法</h2>
+        <table>
+          <thead><tr><th style="width:210px">方法</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td><code>AutoNumberCameras()</code></td><td>让宿主重新自动编号相机。门面层未包装；现场排查相机识别问题时可能用到。</td></tr>
+            <tr><td><code>Crash(i_CrashId, i_bMainThread)</code></td><td>故意让宿主崩溃，用于测试 Nexus 的崩溃上报/恢复。生产脚本中绝不要调用。</td></tr>
+            <tr><td><code>AllocString(text)</code></td><td>把 Python 字符串转成 <code>SafeString</code>。</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="py2">Python 2 版本差异</h2>
+        <p>
+          <code>NexusClient.py</code> 是同一套接口的 Python 2 绑定（对应 <code>_NexusClient.pyd</code>），
+          方法名相同。差异主要在字符串：Python 2 下 <code>str</code> 就是 bytes，
+          因此门面层只在 <code>sys.version_info &lt; (3, 0)</code> 时对
+          <code>AllocString</code> 的入参做 <code>encode('utf-8')</code>。
+        </p>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+* text=auto
+
+# Never touch binary payloads shipped with the SDK
+*.dll  binary
+*.pyd  binary
+*.pdf  binary
+*.whl  binary
+
+# Keep the docs site readable in diffs
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+*.md   text eol=lf

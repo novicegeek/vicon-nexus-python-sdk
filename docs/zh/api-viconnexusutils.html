@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>viconnexusutils 参考 · Vicon Nexus Python SDK</title>
+<meta name="description" content="NexusObject、NexusTrajectory、NexusAngles、NexusSegment：基于 numpy 的对象化封装。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span><a href="api-viconnexus.html">API 参考</a><span class="sep">/</span>viconnexusutils</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>viconnexusutils</h1>
+        <p class="lede">
+          独立分发的可选包（1.0.0），把 SDK 的“列表元组”封装成基于 numpy 的对象：
+          轨迹、角度、骨骼段。对象内部用 <code>(帧数, 3)</code> 或 <code>(帧数, 9)</code> 的 ndarray
+          存储，<code>Read()</code> / <code>Write()</code> 负责与 Nexus 之间搬运。
+        </p>
+
+        <div class="pill-row">
+          <span class="pill">需要 numpy</span>
+          <span class="pill">需要 six</span>
+          <span class="pill">帧号从 1 开始</span>
+          <span class="pill">部分方法未完成</span>
+        </div>
+
+        <div class="warn">
+          <b>先看这个：与新版 numpy 不兼容</b>
+          包内使用了 <code>np.long</code> 与 <code>np.bool</code>，这两个别名在 numpy 1.24 起已被移除，
+          调用相关方法（<code>Position(frames)</code>、<code>Read()</code>、<code>AngleBetween</code> 等）
+          会抛 <code>AttributeError: module 'numpy' has no attribute 'long'</code>。
+          请把环境钉在 <code>numpy&lt;1.24</code>，或自行把源码里的
+          <code>np.long → int</code>、<code>np.bool → bool</code> 替换掉。
+        </div>
+
+        <h2 id="model">数据模型</h2>
+        <table>
+          <thead><tr><th style="width:180px">类</th><th style="width:130px">内部数组</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td><code>NexusTrajectory</code></td><td><code>(M, 3)</code></td><td>三维点集：每个元素是一个位置（mm）。</td></tr>
+            <tr><td><code>NexusAngles</code></td><td><code>(M, 3)</code></td><td>角度三元组（代码里按角轴存储，单位沿用 Nexus 的度）。</td></tr>
+            <tr><td><code>NexusSegment</code></td><td><code>(M, 3)</code> ×3</td><td>骨骼段：平移、欧拉角朝向、缩放各一组。</td></tr>
+          </tbody>
+        </table>
+        <p>
+          <code>M</code> 是帧数。缺失数据统一用 <code>NaN</code> 表示，<code>Write()</code> 时
+          含 <code>NaN</code> 的帧会被置为 <code>exists=False</code>。
+        </p>
+
+        <h2 id="NexusObject">NexusObject</h2>
+        <p><code>viconnexusutils.NexusObject.NexusObject</code> —— 抽象基类，规定三个契约方法。</p>
+
+        <article class="api-item" id="subject_name">
+          <h3>subject_name<span class="sig">属性</span><span class="kind">读写</span></h3>
+          <p class="desc">对象所属受试者名。构造时可传，之后可改。对象在读写时会用它定位数据。</p>
+<pre><code>traj = NexusTrajectory.NexusTrajectory('Colin')
+traj.subject_name = 'Patricia'</code></pre>
+        </article>
+
+        <article class="api-item" id="Create">
+          <h3>Create<span class="sig">(name, SDK)</span><span class="kind">抽象</span></h3>
+          <p class="desc">在 Nexus 中创建一个空输出（若已存在则跳过）。由子类实现。</p>
+        </article>
+
+        <article class="api-item" id="Read">
+          <h3>Read<span class="sig">(name, SDK)</span><span class="kind">抽象</span></h3>
+          <p class="desc">从 Nexus 读入指定名称的输出，填充到对象内部数组（<code>NaN</code> 表示缺失帧）。</p>
+        </article>
+
+        <article class="api-item" id="Write">
+          <h3>Write<span class="sig">(name, SDK)</span><span class="kind">抽象</span></h3>
+          <p class="desc">把对象内部数组写回 Nexus 的同名输出。帧数不足时按单帧复制/补 <code>NaN</code>，
+            超过试次帧数则抛 <code>ValueError('Too many output points for trial')</code>。</p>
+        </article>
+
+        <p>
+          <code>Read</code> / <code>Write</code> 都要求 <code>SDK</code> 是
+          <code>ViconNexus.ViconNexus</code> 实例，否则抛 <code>TypeError</code>；
+          找不到同名输出抛 <code>ValueError</code>。
+        </p>
+
+        <h2 id="NexusTrajectory">NexusTrajectory</h2>
+        <p><code>viconnexusutils.NexusTrajectory.NexusTrajectory(subject_name=None)</code></p>
+
+        <table>
+          <thead><tr><th style="width:250px">方法</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>若不存在则调用 <code>CreateModeledMarker</code> 建一个建模标记点。</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>名称是标记点则读 <code>GetTrajectory</code>，是模型输出则读 <code>GetModelOutput</code>，两者皆非抛 <code>ValueError</code>。</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>经 <code>SetModelOutput</code> 写回（所以目标必须是模型输出，不能是原始标记点）。</td></tr>
+            <tr><td><a href="#Position"><code>Position(frames=None)</code></a></td><td>取位置。</td></tr>
+            <tr><td><a href="#SetPosition"><code>SetPosition(components, frames=None)</code></a></td><td>设位置。</td></tr>
+            <tr><td><code>mean()</code></td><td>按帧平均，返回新的 <code>NexusTrajectory</code>。</td></tr>
+            <tr><td><code>+ - * /</code>、<code>mean</code></td><td>逐元素运算，详见下方运算符表。</td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="Position">
+          <h3>Position<span class="sig">(frames=None)</span><span class="kind">读</span></h3>
+          <p class="desc">读取位置数据。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>frames</code></td><td>None / int / array</td><td><code>None</code> 取全部；标量取该帧（<strong>1 基</strong>，内部做 <code>frames-1</code>）；数组取多帧。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> 嵌套 <code>list</code>（全部帧时为 <code>M×3</code>；单帧时为长度 3 的
+            <code>numpy</code> 行向量，<strong>不是</strong>普通 list）。</p>
+<pre><code>traj = NexusTrajectory.NexusTrajectory('Colin')
+traj.Read('LKNE', vicon)
+print(traj.Position()[0])      # 第 1 帧
+print(traj.Position(50))       # 第 50 帧</code></pre>
+        </article>
+
+        <article class="api-item" id="SetPosition">
+          <h3>SetPosition<span class="sig">(components, frames=None)</span><span class="kind">写</span></h3>
+          <p class="desc">设置位置数据。<code>components</code> 必须是 <code>N×3</code>；<code>frames</code>
+            给定时只更新指定帧，且长度必须与 <code>components</code> 行数一致，否则抛
+            <code>ValueError</code>。</p>
+<pre><code>traj.SetPosition([[0.0, 0.0, 0.0]] * 10)          # 全部帧
+traj.SetPosition([[1.0, 2.0, 3.0]], [50])          # 只改第 50 帧</code></pre>
+          <div class="note">
+            <b>实现缺陷</b>
+            按帧写入后用于“向后扩展数组”的 <code>np.append(...)</code> 返回值被丢弃，
+            因此<strong>不会真正扩展</strong>数组长度。需要变长时请一次传入完整数组。
+          </div>
+        </article>
+
+        <h3 id="traj-ops">运算符</h3>
+        <table>
+          <thead><tr><th style="width:170px">表达式</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td><code>traj + traj2</code> / <code>+ 数组</code></td><td>逐元素相加，返回新轨迹。受试者名按“相同则保留、一方为空则取另一方、冲突则置空”合并。</td></tr>
+            <tr><td><code>traj - traj2</code></td><td>逐元素相减。</td></tr>
+            <tr><td><code>traj * 标量</code> / <code>标量 * traj</code></td><td>缩放。</td></tr>
+            <tr><td><code>traj / 标量</code></td><td>缩放。</td></tr>
+            <tr><td><code>traj * segment</code></td><td><strong>把点从段坐标系转到全局</strong>（调用 <code>segment.GlobalisePoint</code>）。</td></tr>
+            <tr><td><code>traj / segment</code></td><td><strong>把全局点转到段坐标系</strong>（调用 <code>segment.LocalisePoint</code>）。</td></tr>
+            <tr><td><code>-traj</code> / <code>+traj</code></td><td>取反 / 复制。</td></tr>
+          </tbody>
+        </table>
+<pre><code># 段局部坐标 → 世界坐标，写法很直观
+world_points = local_points * segment</code></pre>
+
+        <h2 id="NexusAngles">NexusAngles</h2>
+        <p><code>viconnexusutils.NexusAngles.NexusAngles(subject_name=None)</code></p>
+
+        <table>
+          <thead><tr><th style="width:250px">方法</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>创建分组为 <code>Angles</code>、分量 <code>X/Y/Z</code>、量纲 <code>Angle</code> 的模型输出。</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>读取同名模型输出，缺失帧置 <code>NaN</code>。</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>写回模型输出。</td></tr>
+            <tr><td><code>Angles(frames)</code></td><td>取角度（语义同 <code>Position</code>）。<strong>注意 <code>frames</code> 是必填参数。</strong></td></tr>
+            <tr><td><code>SetAngles(components, frames=None)</code></td><td>设角度。</td></tr>
+            <tr><td><code>* / </code>、<code>-</code>、<code>+</code></td><td>对角度值做缩放/取反。</td></tr>
+            <tr><td><code>mean()</code></td><td><strong>有缺陷</strong>，见下。</td></tr>
+          </tbody>
+        </table>
+
+        <div class="warn">
+          <b>已知缺陷（1.0.0）</b>
+          <ul style="margin:6px 0 0">
+            <li><code>Read()</code> 里用 <code>angles[~e, :] = np.nan</code>，其中 <code>angles</code> 形状是
+              <code>(3, M)</code> 而 <code>e</code> 长度是 <code>M</code>，帧数大于 3 时掩码维度不匹配，
+              会抛 <code>IndexError</code>。建议直接用 <code>ViconNexus.GetModelOutput</code> 后自行置 NaN。</li>
+            <li><code>mean()</code> 把结果写进了 <code>result._position</code>（本类没有这个属性），
+              返回值里的角度仍是初始的 <code>NaN</code>。需要均值请自己 <code>np.mean</code>。</li>
+            <li><code>Angles()</code> 没有默认参数，传 <code>None</code> 才表示“全部帧”。</li>
+          </ul>
+        </div>
+
+        <h2 id="NexusSegment">NexusSegment</h2>
+        <p><code>viconnexusutils.NexusSegment.NexusSegment(subject=None, axisOrder='xyz')</code> ——
+          一个带位置、朝向、缩放的骨骼段。</p>
+
+        <article class="api-item" id="global_segment">
+          <h3>global_segment<span class="sig">()</span><span class="kind">静态构造</span></h3>
+          <p class="desc">返回位于原点、单位旋转、缩放为 1 的“世界段”，可用作坐标变换的起点。</p>
+<pre><code>world = NexusSegment.NexusSegment.global_segment()</code></pre>
+        </article>
+
+        <article class="api-item" id="axisOrder">
+          <h3>axisOrder<span class="sig">属性</span><span class="kind">读写</span></h3>
+          <p class="desc">欧拉角轴序，默认 <code>'xyz'</code>。setter 会校验必须同时包含
+            <code>x</code>、<code>y</code>、<code>z</code>，否则抛
+            <code>ValueError('Invalid axis order…')</code>。</p>
+        </article>
+
+        <table>
+          <thead><tr><th style="width:260px">方法</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>创建 <code>Plug-in Gait Bones</code> 分组、9 分量（<code>RX RY RZ TX TY TZ SX SY SZ</code>）的模型输出。</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>读 9 分量：前 3 个是角轴（度）→ 转角轴矩阵 → 欧拉角；后 3 个平移；再 3 个缩放。</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>欧拉角 → 矩阵 → 角轴（度）后写回 9 分量。</td></tr>
+            <tr><td><a href="#Populate"><code>Populate(origin, firstAxis, crossingAxis, axisOrder=None)</code></a></td><td>由三条轨迹构造段。</td></tr>
+            <tr><td><code>Position(frames=None)</code> / <code>SetPosition(...)</code></td><td>平移。</td></tr>
+            <tr id="Orientation"><td><code>Orientation(frames=None)</code> / <code>SetOrientation(...)</code></td><td>朝向（欧拉角，弧度）。</td></tr>
+            <tr id="Scale"><td><code>Scale(frames=None)</code> / <code>SetScale(...)</code></td><td>缩放（<code>Scale()</code> 有缺陷，见下）。</td></tr>
+            <tr><td><a href="#GlobalisePoint"><code>GlobalisePoint(point, frames=None)</code></a></td><td>段内点 → 全局。</td></tr>
+            <tr><td><a href="#LocalisePoint"><code>LocalisePoint(point, frames=None)</code></a></td><td>全局点 → 段内。</td></tr>
+            <tr><td><a href="#TranslatePointInSegment"><code>TranslatePointInSegment(point, translation, frames=None)</code></a></td><td>段内平移一个点。</td></tr>
+            <tr><td><a href="#AngleBetween"><code>AngleBetween(segment, angle_type='euler', order='xyz')</code></a></td><td>两段夹角。</td></tr>
+            <tr><td><code>+ - </code>（与轨迹）</td><td>把段原点按轨迹平移。</td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="Populate">
+          <h3>Populate<span class="sig">(origin, firstAxis, crossingAxis, axisOrder=None)</span><span class="kind">写</span></h3>
+          <p class="desc">用三条轨迹定义一个骨骼段：<code>origin</code> 给原点，
+            <code>firstAxis</code> 给主轴的<b>方向与长度</b>，<code>crossingAxis</code> 与主轴叉乘给出第二轴的平面。
+            主轴模长同时作为段的缩放。</p>
+          <table>
+            <thead><tr><th style="width:150px">参数</th><th style="width:180px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>origin</code></td><td>NexusTrajectory / N×3</td><td>段原点轨迹。</td></tr>
+              <tr><td><code>firstAxis</code></td><td>NexusTrajectory / N×3</td><td>指向主轴的向量（相对原点）。</td></tr>
+              <tr><td><code>crossingAxis</code></td><td>NexusTrajectory / N×3</td><td>定义第二轴所在平面的向量。</td></tr>
+              <tr><td><code>axisOrder</code></td><td>str</td><td>可选；缺省用对象当前 <code>axisOrder</code>。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>None</code>。三个输入长度必须一致，否则抛
+            <code>ValueError('Mismatched sizes…')</code>；形状不是 <code>N×3</code> 抛
+            <code>TypeError</code>。</p>
+<pre><code>seg = NexusSegment.NexusSegment('Colin')
+
+pelvis = NexusTrajectory.NexusTrajectory('Colin');  pelvis.Read('PEL', vicon)
+sacrum = NexusTrajectory.NexusTrajectory('Colin');  sacrum.Read('SACR', vicon)
+lhip   = NexusTrajectory.NexusTrajectory('Colin');  lhip.Read('LHIP', vicon)
+
+seg.Populate(pelvis, sacrum - pelvis, lhip - pelvis)
+seg.Create('MySeg', vicon)
+seg.Write('MySeg', vicon)</code></pre>
+        </article>
+
+        <article class="api-item" id="GlobalisePoint">
+          <h3>GlobalisePoint<span class="sig">(point, frames=None)</span><span class="kind">读</span></h3>
+          <p class="desc">把段局部坐标下的点转到全局坐标，逐帧使用该帧的位姿。</p>
+          <p class="ret"><strong>返回</strong> <code>list</code>（<code>M×3</code>）；<code>point</code> 可以是
+            <code>NexusTrajectory</code> 或 <code>N×3</code> 列表，长度 1 时自动广播到所有帧。</p>
+<pre><code>knee_global = seg.GlobalisePoint([[0.0, 0.0, 40.0]])</code></pre>
+        </article>
+
+        <article class="api-item" id="LocalisePoint">
+          <h3>LocalisePoint<span class="sig">(point, frames=None)</span><span class="kind">读</span></h3>
+          <p class="desc">把全局点转到段局部坐标。</p>
+          <p class="ret"><strong>返回</strong> <code>list</code>（<code>M×3</code>）。</p>
+        </article>
+
+        <article class="api-item" id="TranslatePointInSegment">
+          <h3>TranslatePointInSegment<span class="sig">(point, translation, frames=None)</span><span class="kind">读</span></h3>
+          <p class="desc">把点按段坐标系内的向量 <code>translation</code> 平移，返回<strong>全局坐标</strong>的
+            <code>NexusTrajectory</code>。用于“从某点沿骨段方向偏移一段距离”。</p>
+<pre><code># 从踝点沿小腿段向上 100 mm
+offset_traj = seg.TranslatePointInSegment(ankle, [0.0, 0.0, 100.0])</code></pre>
+        </article>
+
+        <article class="api-item" id="AngleBetween">
+          <h3>AngleBetween<span class="sig">(segment, angle_type='euler', order='xyz')</span><span class="kind">读</span></h3>
+          <p class="desc">计算本段与另一段之间的相对朝向，返回 <code>NexusAngles</code>。两个段帧数不同时，
+            单帧的一方会被广播；都不为 1 且不相等则抛 <code>ValueError('Incompatible segments…')</code>。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>segment</code></td><td>NexusSegment</td><td>与之比较的段，其它类型抛 <code>TypeError</code>。</td></tr>
+              <tr><td><code>angle_type</code></td><td>str</td><td><code>'euler'</code>（默认，度）、<code>'fixed'</code>（度，取转置后取负）、<code>'helical'</code>（角轴，弧度）。</td></tr>
+              <tr><td><code>order</code></td><td>str</td><td>欧拉轴序，默认 <code>'xyz'</code>。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>NexusAngles</code>，受试者名按合并规则设置。</p>
+<pre><code>rel = thigh.AngleBetween(shank, 'euler', 'xyz')
+rel.Write('MyKneeAngle', vicon)</code></pre>
+          <div class="note">
+            <b><code>helical</code> 与其它两种单位不同</b>
+            <code>'euler'</code>/<code>'fixed'</code> 乘了 <code>180/π</code>（度），
+            <code>'helical'</code> 没有（弧度）。混用前先统一单位。
+          </div>
+        </article>
+
+        <h2 id="bugs">已知问题汇总</h2>
+        <table>
+          <thead><tr><th style="width:280px">位置</th><th>现象</th><th style="width:200px">规避</th></tr></thead>
+          <tbody>
+            <tr><td><code>np.long</code> / <code>np.bool</code></td><td>numpy ≥ 1.24 抛 <code>AttributeError</code></td><td>钉 <code>numpy&lt;1.24</code> 或替换别名</td></tr>
+            <tr><td><code>NexusAngles.Read</code></td><td>帧数 &gt; 3 时布尔掩码维度不匹配</td><td>改用 <code>GetModelOutput</code></td></tr>
+            <tr><td><code>NexusAngles.mean</code></td><td>写入不存在的 <code>_position</code>，结果全 NaN</td><td>自行 <code>np.mean</code></td></tr>
+            <tr><td><code>NexusSegment.Scale</code></td><td>返回的是 <code>_orientation</code></td><td>直接读内部 <code>_scale</code> 或自己维护</td></tr>
+            <tr><td><code>NexusSegment.mean</code></td><td>末尾 <code>pass</code>，返回 <code>None</code></td><td>不使用</td></tr>
+            <tr><td><code>NexusSegment.__rmul__</code></td><td>直接 <code>pass</code>，返回 <code>None</code></td><td>写成 <code>traj * seg</code>，别写 <code>seg * traj</code></td></tr>
+            <tr><td><code>NexusTrajectory.SetPosition</code></td><td>按帧写入不会扩展数组</td><td>一次性传入完整数组</td></tr>
+            <tr><td><code>Write</code> 的补帧逻辑</td><td><code>frames+1:</code> 切片会跳过一帧</td><td>保持对象帧数与试次一致</td></tr>
+            <tr><td><code>NexusSegment.SetPosition/SetOrientation/SetScale</code></td><td>帧索引未做 <code>-1</code>，与 <code>Position</code> 等不一致（<strong>0 基</strong>）</td><td>传入时自己减 1，或整段替换</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="workflow">典型工作流</h2>
+<pre><code>from viconnexusapi import ViconNexus
+from viconnexusutils import NexusTrajectory, NexusSegment
+
+vicon = ViconNexus.ViconNexus()
+
+# 1. 读三个标记点
+pelvis = NexusTrajectory.NexusTrajectory('Colin'); pelvis.Read('PEL', vicon)
+lhip   = NexusTrajectory.NexusTrajectory('Colin'); lhip.Read('LHIP', vicon)
+rhip   = NexusTrajectory.NexusTrajectory('Colin'); rhip.Read('RHIP', vicon)
+
+# 2. 构造骨盆段（原点 PEL，主轴指 LHIP，第三点定平面）
+seg = NexusSegment.NexusSegment('Colin')
+seg.Populate(pelvis, lhip - pelvis, rhip - pelvis)
+
+# 3. 写回成一个 9 分量模型输出
+seg.Create('MyPelvis', vicon)
+seg.Write('MyPelvis', vicon)
+
+# 4. 落盘（仅在外部 Python 进程中可行）
+vicon.SaveTrial(30)</code></pre>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

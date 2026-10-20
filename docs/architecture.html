@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture · Vicon Nexus Python SDK</title>
+<meta name="description" content="The call chain from the ViconNexus facade through the SWIG client and native DLLs to Nexus, plus the source layout.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span>Architecture</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Architecture</h1>
+        <p class="lede">
+          Knowing the SDK's four layers explains most of the "why did this call do nothing?" and
+          "why this error?" questions.
+        </p>
+
+        <h2 id="layers">Call chain</h2>
+<pre><code>your code
+  │
+  ▼
+L1  facade           viconnexusapi.ViconNexus.ViconNexus
+    marshals Python ↔ C++ values: list ↔ vector, str ↔ SafeString,
+    dict ↔ map; prints failures (GenerateErrors); owns the method
+    names and docstrings you read in this reference
+  │  self.Client = nexusclient.ViconNexusClient()
+  ▼
+L2  SWIG bindings    viconnexusapi.NexusClient3   (Python 3)
+                     viconnexusapi.NexusClient    (Python 2)
+    generated code, 1:1 with the C++ interface, returns Output_* structs;
+    also supplies vectord / vectori / vectorb / SafeString containers
+  │  _NexusClient3.ViconNexusClient_GetTrajectory(...)
+  ▼
+L3  native extension  _NexusClient3.pyd  (Python 3)
+                      _NexusClient.pyd   (Python 2)
+    depends on boost_python27 / boost_system / boost_thread DLLs
+  │  in-process IPC
+  ▼
+L4  transport        ViconSDKClientCPP.dll / NexusSDKClientCPP.dll
+    connects to the running Nexus process and exchanges commands
+  │
+  ▼
+Vicon Nexus host application (it owns the trial data)</code></pre>
+
+        <h2 id="responsibilities">Responsibilities per layer</h2>
+        <table>
+          <thead><tr><th style="width:150px">Layer</th><th style="width:260px">Files</th><th>Concerns</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>L1 facade</td>
+              <td><code>viconnexusapi/ViconNexus.py</code><br><code>ViconUtils.py</code></td>
+              <td>Type conversion, error printing, <code>NaN</code> semantics, Python 2/3 string differences</td>
+            </tr>
+            <tr>
+              <td>L2 bindings</td>
+              <td><code>NexusClient3.py</code> (~1856 lines)<br><code>NexusClient.py</code> (Py2)</td>
+              <td>Interface mapping, <code>Output_*</code> result types, container types; never edit these by hand</td>
+            </tr>
+            <tr>
+              <td>L3 extension</td>
+              <td><code>_NexusClient3.pyd</code></td>
+              <td>Bitness must match the interpreter (x64)</td>
+            </tr>
+            <tr>
+              <td>L4 transport</td>
+              <td><code>ViconSDKClientCPP.dll</code><br><code>NexusSDKClientCPP.dll</code></td>
+              <td>Host/port, timeouts, command serialisation; version compatibility is decided here</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="entrypoints">Which binding gets loaded: Python 2 or 3</h2>
+        <p>
+          The top of <code>ViconNexus.py</code> picks the low-level module by interpreter version,
+          which is transparent to callers:
+        </p>
+<pre><code>if sys.version_info &gt; (3, 0):
+    from . import NexusClient3 as nexusclient     # binds _NexusClient3.pyd
+    ...
+else:
+    from . import NexusClient as nexusclient      # binds _NexusClient.pyd
+    ...</code></pre>
+        <p>
+          Both bindings expose the same method names, so application code needs no branching. Strings
+          are the one real difference: in Python 2 a <code>str</code> <em>is</em> bytes, which is why the
+          facade funnels every returned string through <code>_get_safe_string_value()</code> and
+          <code>decode('utf-8')</code> — what you receive is always <code>str</code>.
+          Conversely, every argument is <code>.encode('utf-8')</code>-ed before it crosses the boundary.
+        </p>
+
+        <h2 id="results">Return values: the <code>Output_Result</code> family</h2>
+        <p>
+          Every low-level command returns an <code>Output_*</code> object. They all derive from
+          <code>Output_Result</code>, so all of them have:
+        </p>
+        <table>
+          <thead><tr><th style="width:220px">Member</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>Error()</code></td><td>bool — did the command fail?</td></tr>
+            <tr><td><code>ResultString()</code></td><td><code>SafeString</code> — why it failed</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Each type then adds its own data members: <code>Output_GetTrajectory</code> carries
+          <code>X/Y/Z/E</code>, <code>Output_GetSubjectNames</code> carries <code>Names/Models/Active</code>.
+          The facade's job is to translate those members into Python lists and tuples.
+        </p>
+
+        <h2 id="flow">One <code>GetTrajectory</code> call, end to end</h2>
+<pre><code># your code
+x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+
+# L1: encode the strings → call L2 → check for errors → expand 4 vectors into lists
+def GetTrajectory(self, subject, marker):
+    data = self.Client.GetTrajectory(subject.encode('utf-8'),
+                                     marker.encode('utf-8'))
+    if data.Error() and self.GenerateErrors:
+        print(ViconNexus._get_safe_string_value(data.ResultString), file=sys.stderr)
+    x, y, z, e = list(data.X), list(data.Y), list(data.Z), list(data.E)
+    return x, y, z, e
+
+# L2: SWIG forwards to _NexusClient3
+def GetTrajectory(self, i_rSubjectName, i_rMarkerName):
+    return _NexusClient3.ViconNexusClient_GetTrajectory(
+        self, i_rSubjectName, i_rMarkerName)</code></pre>
+
+        <div class="note">
+          <b>Consequence</b>
+          On failure <code>data.X</code> and friends are still empty containers, so the method returns
+          four <strong>empty lists</strong> instead of raising. "No data" therefore usually shows up as
+          a length of 0, not as an exception.
+        </div>
+
+        <h2 id="layout">Source layout</h2>
+<pre><code>ViconNexus2.12_PythonSDK/
+├── install_vicon_nexus_api.bat      # pip install the core package
+├── install_vicon_nexus_utils.bat    # pip install the utils package
+├── uninstall_vicon_nexus_api.bat
+├── uninstall_vicon_nexus_utils.bat
+├── example_scripts/                 # the 8 official examples
+│   ├── DetectFootEvents.py
+│   ├── DisplayModelOutputInfo.py
+│   ├── DisplaySubjectInfo.py
+│   ├── DisplayTrialInfo.py
+│   ├── NexusConformityTest.py
+│   ├── SimpleMidpoint.py
+│   └── GapFilling/
+│       ├── FillGaps.py
+│       └── ProcessGaps.py
+├── viconnexusapi/
+│   ├── VERSION (1.0.3)  LICENSE  CHANGES.rst  README.rst
+│   ├── setup.py  MANIFEST.in
+│   ├── viconnexusapi/               # ← the package you actually import
+│   │   ├── ViconNexus.py            # L1 facade
+│   │   ├── ViconUtils.py            # math / modelling helpers
+│   │   ├── NexusForcePlate.py       # data class
+│   │   ├── NexusEyeTracker.py       # data class
+│   │   ├── NexusClient3.py          # L2 SWIG (Py3)
+│   │   ├── NexusClient.py           # L2 SWIG (Py2)
+│   │   ├── _NexusClient3.pyd        # L3 (Py3)
+│   │   ├── _NexusClient.pyd         # L3 (Py2)
+│   │   └── *.dll                    # boost_* / ViconSDKClientCPP / NexusSDKClientCPP
+│   └── build/lib/viconnexusapi/     # setup.py build output, duplicates of the files above
+└── viconnexusutils/
+    ├── VERSION (1.0.0)  setup.py
+    └── viconnexusutils/
+        ├── NexusObject.py
+        ├── NexusTrajectory.py
+        ├── NexusAngles.py
+        └── NexusSegment.py</code></pre>
+
+        <div class="tip">
+          <b>Don't edit <code>build/lib</code></b>
+          <code>build/lib/</code> is only a copy produced during packaging; it is not what gets imported.
+          Change behaviour in the sources under <code>viconnexusapi/viconnexusapi/</code> and
+          <code>pip install</code> again.
+        </div>
+
+        <h2 id="packaging">Packaging</h2>
+        <p>
+          <code>setup.py</code> reads the version from the sibling <code>VERSION</code> file,
+          collects packages with <code>find_packages()</code>, and relies on
+          <code>include_package_data=True</code> plus <code>MANIFEST.in</code> to carry the
+          <code>.pyd</code> and <code>.dll</code> files along. In other words:
+          <strong>a wheel built from this directory already contains the binaries</strong>, so end users
+          never have to copy DLLs by hand.
+        </p>
+
+        <h2 id="threading">Threads and concurrency</h2>
+        <ul>
+          <li>Client and Nexus speak a command/response protocol: only one command may be in flight. Concurrent calls from several threads need your own lock.</li>
+          <li>Methods that take a <code>timeout</code> (<code>RunPipeline</code>, <code>OpenTrial</code>, …) only give up waiting <em>client-side</em>; the host may still be working.</li>
+          <li>Long loops inside a Nexus-hosted script block the UI — drive them from an external process instead.</li>
+        </ul>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

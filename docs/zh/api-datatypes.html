@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据类型 · Vicon Nexus Python SDK</title>
+<meta name="description" content="NexusForcePlate 与 NexusEyeTracker：测力台与眼动仪的几何/位姿数据结构。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span><a href="api-viconnexus.html">API 参考</a><span class="sep">/</span>数据类型</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>数据类型</h1>
+        <p class="lede">
+          SDK 只有两个“纯数据类”，都由
+          <a href="api-viconnexus.html#GetDeviceDetails"><code>GetDeviceDetails()</code></a>
+          填充。它们没有方法，只有属性；构造时全部初始化为 0 或空串。
+        </p>
+
+        <h2 id="NexusForcePlate">NexusForcePlate</h2>
+        <p><code>viconnexusapi.NexusForcePlate.NexusForcePlate</code> —— 测力台的几何信息。</p>
+
+        <table>
+          <thead><tr><th style="width:130px">属性</th><th style="width:90px">类型</th><th style="width:80px">长度</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>LocalR</code></td><td>list[float]</td><td>9</td><td>局部旋转矩阵，<strong>行主序</strong>压平。</td></tr>
+            <tr><td><code>LocalT</code></td><td>list[float]</td><td>3</td><td>相对设备原点的局部平移（mm）。</td></tr>
+            <tr><td><code>WorldR</code></td><td>list[float]</td><td>9</td><td>世界坐标系旋转矩阵，行主序压平。</td></tr>
+            <tr><td><code>WorldT</code></td><td>list[float]</td><td>3</td><td>世界坐标平移（mm）。</td></tr>
+            <tr><td><code>LowerBounds</code></td><td>list[float]</td><td>3</td><td>台面范围下界（mm），局部坐标系。</td></tr>
+            <tr><td><code>UpperBounds</code></td><td>list[float]</td><td>3</td><td>台面范围上界（mm），局部坐标系。</td></tr>
+            <tr><td><code>Context</code></td><td>str</td><td>—</td><td>Nexus 为该台标注的上下文标签（如 <code>Left</code>/<code>Right</code>），可能为空串；按不透明字符串处理。</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+
+# 台面中心（局部）
+center = [(plate.UpperBounds[i] + plate.LowerBounds[i]) / 2.0 for i in range(3)]
+
+# 台面中心（世界）
+center_global = ViconUtils.Globalise(center, plate.WorldR, plate.WorldT)
+
+# 台面尺寸
+size = [plate.UpperBounds[i] - plate.LowerBounds[i] for i in range(3)]</code></pre>
+
+        <div class="note">
+          <b>单位混用的坑</b>
+          <code>LocalR/WorldR/WorldT</code> 是 mm；但 <code>CoP</code> 通道（<code>Cx/Cy/Cz</code>）
+          的原始数值可能是 m，需要 <code>×1000</code> 才能和 <code>LowerBounds/UpperBounds</code> 比较。
+          官方 <code>DetectFootEvents</code> 示例里就显式做了 <code>/ 1000.0</code> 的反向换算。
+        </div>
+
+        <h2 id="NexusEyeTracker">NexusEyeTracker</h2>
+        <p><code>viconnexusapi.NexusEyeTracker.NexusEyeTracker</code> —— 眼动仪的挂载与偏移信息。</p>
+
+        <table>
+          <thead><tr><th style="width:130px">属性</th><th style="width:90px">类型</th><th style="width:80px">长度</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>SubjectName</code></td><td>str</td><td>—</td><td>眼动仪所关联的受试者名（可为空）。</td></tr>
+            <tr><td><code>SegmentName</code></td><td>str</td><td>—</td><td>眼动仪所关联的骨骼段名（可为空）。</td></tr>
+            <tr><td><code>EyePoseT</code></td><td>list[float]</td><td>3</td><td>眼位姿平移（mm）。</td></tr>
+            <tr><td><code>EyePoseR</code></td><td>list[float]</td><td>9</td><td>眼位姿旋转矩阵，行主序压平。</td></tr>
+            <tr><td><code>Offset</code></td><td>list[float]</td><td>3</td><td>眼偏移（mm）。</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+if dtype == 'EyeTracker':
+    print('挂在', et.SubjectName, '/', et.SegmentName)
+    gaze_origin = ViconUtils.Globalise(et.Offset, et.EyePoseR, et.EyePoseT)</code></pre>
+
+        <h2 id="relationship">与 ViconNexus 方法的关系</h2>
+        <table>
+          <thead><tr><th style="width:220px">来源方法</th><th>产出的对象</th></tr></thead>
+          <tbody>
+            <tr><td><a href="api-viconnexus.html#GetDeviceDetails"><code>GetDeviceDetails</code></a></td><td>第 5 个元素 → <code>NexusForcePlate</code>；第 6 个元素 → <code>NexusEyeTracker</code></td></tr>
+          </tbody>
+        </table>
+        <p>
+          这两个对象<strong>总是</strong>存在，与设备类型无关：测力台设备的
+          <code>eyetracker</code> 字段是一个全零的空壳，反之亦然。判类型请用
+          <code>device_type</code> 字符串。
+        </p>
+
+        <h2 id="lowlevel-types">底层相关类型</h2>
+        <p>
+          如果你直接操作 <code>vicon.Client</code>，还会遇到 <code>ForcePlate</code>、
+          <code>EyeTracker</code>、<code>Output_*</code>、<code>SafeString</code> 等 SWIG 类型，
+          见 <a href="api-lowlevel.html">底层客户端</a>。
+        </p>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

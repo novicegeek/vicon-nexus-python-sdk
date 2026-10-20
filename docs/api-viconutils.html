@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ViconUtils reference · Vicon Nexus Python SDK</title>
+<meta name="description" content="viconnexusapi.ViconUtils: coordinate transforms, rotation-representation conversions and one-shot Plug-in Gait output creation.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span><a href="api-viconnexus.html">API reference</a><span class="sep">/</span>ViconUtils</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>ViconUtils</h1>
+        <p class="lede">
+          <code>viconnexusapi.ViconUtils</code> — a set of stateless pure functions: local/global
+          coordinate transforms, conversions between six rotation representations, and one-shot
+          creation of the whole Plug-in Gait model output set. Plain Python + <code>math</code>; it
+          uses no numpy and never touches Nexus.
+        </p>
+
+<pre><code>from viconnexusapi import ViconUtils
+
+R = ViconUtils.MatrixFromEuler([0.1, 0.2, 0.3], 'xyz')
+euler = ViconUtils.EulerFromMatrix(R, 'xyz')</code></pre>
+
+        <h2 id="conventions">Conventions and units</h2>
+        <table>
+          <thead><tr><th style="width:190px">Item</th><th>Convention</th></tr></thead>
+          <tbody>
+            <tr><td>Rotation matrix</td><td>3×3 nested list <code>[[r00, r01, r02], …]</code></td></tr>
+            <tr><td>"Flattened" matrix</td><td>9-element list, <strong>row-major</strong> — this is the form Nexus hands out as <code>LocalR/WorldR</code></td></tr>
+            <tr><td>Euler angles</td><td>3-element list, <strong>radians</strong>; the order string gives the rotation sequence, e.g. <code>'xyz'</code></td></tr>
+            <tr><td>Angle-axis</td><td>3-element list: direction is the rotation axis, <strong>the norm is the angle in radians</strong></td></tr>
+            <tr><td>Quaternion</td><td>4-element list ordered <code>[x, y, z, w]</code></td></tr>
+            <tr><td>Translation</td><td>millimetres (mm), matching Nexus</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>Nexus stores angles in degrees</b>
+          The <code>RX/RY/RZ</code> components of a <code>Plug-in Gait Bones</code> model output are stored
+          in <strong>degrees</strong> and in <strong>angle-axis</strong> form. When converting with this
+          module, multiply by <code>π/180</code> on the way in and by <code>180/π</code> on the way out.
+        </div>
+
+        <h2 id="coordinates">Coordinate transforms</h2>
+
+        <article class="api-item" id="Globalise">
+          <h3>Globalise<span class="sig">(point, WorldPoseR, WorldPoseT)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Transforms a point from a <strong>local</strong> (segment or device) frame into world
+            coordinates: <code>p_global = R · p_local + T</code>.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>point</code></td><td>list[float]</td><td>Local coordinates, 3 elements (mm).</td></tr>
+              <tr><td><code>WorldPoseR</code></td><td>list[float]</td><td>Rotation matrix flattened to 9 values, row-major.</td></tr>
+              <tr><td><code>WorldPoseT</code></td><td>list[float]</td><td>Translation vector, 3 elements (mm).</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — 3-element world coordinates.</p>
+<pre><code># plate-local point → world coordinates
+name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(plate_id)
+ref_local = [0.0, 0.0, 0.0]
+ref_global = ViconUtils.Globalise(ref_local, plate.WorldR, plate.WorldT)</code></pre>
+        </article>
+
+        <article class="api-item" id="Localise">
+          <h3>Localise<span class="sig">(point, WorldPoseR, WorldPoseT)</span><span class="kind">pure function</span></h3>
+          <p class="desc">The inverse of <code>Globalise</code>: brings a world point into the local frame,
+            <code>p_local = Rᵀ · (p_global − T)</code>.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>point</code></td><td>list[float]</td><td>World coordinates, 3 elements (mm).</td></tr>
+              <tr><td><code>WorldPoseR</code></td><td>list[float]</td><td>9-element row-major rotation matrix.</td></tr>
+              <tr><td><code>WorldPoseT</code></td><td>list[float]</td><td>3-element translation.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — 3-element local coordinates.</p>
+<pre><code># test whether a marker falls inside the plate bounds
+marker_local = ViconUtils.Localise([mx, my, mz], plate.WorldR, plate.WorldT)
+inside = (plate.LowerBounds[0] &lt; marker_local[0] &lt; plate.UpperBounds[0] and
+          plate.LowerBounds[1] &lt; marker_local[1] &lt; plate.UpperBounds[1])</code></pre>
+          <div class="tip">
+            <b>Implementation detail</b>
+            The source builds the inverse translation by negating the rotation matrix and transposing it.
+            That is numerically equivalent to <code>Rᵀ(p − T)</code> as long as <code>R</code> is
+            orthonormal; a matrix carrying scale will drift.
+          </div>
+        </article>
+
+        <h2 id="math">Rotation-representation conversions</h2>
+
+        <p>How the six representations reach each other:</p>
+<pre><code>                  MatrixFromEuler              QuaternionFromMatrix
+   Euler angles ───────────────────▶ Matrix ────────────────────────▶ Quaternion
+                ◀───────────────────    │
+                  EulerFromMatrix       │                (no inverse is provided:
+                                        │                 go through Matrix)
+                                        ├── AngleAxisFromMatrix ──────────▶ Angle-axis
+                                        │                                   │
+                                        └── AngleAxisFromQuaternion ◀────────┘
+
+   Angle-axis ──RotationMatrixFromAngleAxis──▶ Matrix</code></pre>
+
+        <article class="api-item" id="EulerFromMatrix">
+          <h3>EulerFromMatrix<span class="sig">(matrix, order)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Decomposes a 3×3 rotation matrix into Euler angles. Six axis orders are
+            supported and the gimbal-lock branch is handled; a matrix containing <code>NaN</code>
+            yields <code>[nan, nan, nan]</code>.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>matrix</code></td><td>list[list[float]]</td><td>3×3 rotation matrix (nested list, <em>not</em> the flattened 9 values).</td></tr>
+              <tr><td><code>order</code></td><td>str</td><td><code>'xyz'</code>, <code>'zyx'</code>, <code>'xzy'</code>, <code>'yzx'</code>, <code>'yxz'</code>, <code>'zxy'</code>.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — 3 Euler angles in
+            <strong>radians</strong>. <strong>Raises</strong> <code>ValueError('Unsupported Euler angle combination')</code>
+            for an invalid <code>order</code>.</p>
+<pre><code>R = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
+print(ViconUtils.EulerFromMatrix(R, 'xyz'))     # radians</code></pre>
+        </article>
+
+        <article class="api-item" id="MatrixFromEuler">
+          <h3>MatrixFromEuler<span class="sig">(angles, order)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Builds a rotation matrix from Euler angles in radians. Internally it multiplies
+            in the order <code>order[2] · order[1] · order[0]</code> and returns the transpose of the product.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>angles</code></td><td>list[float]</td><td>3 Euler angles in radians.</td></tr>
+              <tr><td><code>order</code></td><td>str</td><td>Axis order, e.g. <code>'xyz'</code>.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[list[float]]</code> — a 3×3 rotation matrix.</p>
+<pre><code>R = ViconUtils.MatrixFromEuler([0.0, 0.0, 1.5707963], 'xyz')</code></pre>
+          <div class="note">
+            <b>Implementation detail</b>
+            The source selects the axis matrices with <code>eval()</code> (<code>Matx/Maty/Matz</code>), so
+            <code>order</code> must be a permutation of those three characters. Any other string raises
+            <code>NameError</code> rather than <code>ValueError</code> — worth remembering when validating input.
+          </div>
+        </article>
+
+        <article class="api-item" id="QuaternionFromMatrix">
+          <h3>QuaternionFromMatrix<span class="sig">(RotMat)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Computes the unit quaternion for a rotation matrix using Ken Shoemake's algorithm
+            (1987 SIGGRAPH course notes, "Quaternion Calculus and Fast Animation"). Input containing
+            <code>NaN</code> yields <code>[nan, nan, nan, nan]</code>.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody><tr><td><code>RotMat</code></td><td>list[list[float]]</td><td>3×3 rotation matrix.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — <code>[x, y, z, w]</code>, normalised.</p>
+<pre><code>q = ViconUtils.QuaternionFromMatrix(R)
+print('w =', q[3])</code></pre>
+        </article>
+
+        <article class="api-item" id="AngleAxisFromQuaternion">
+          <h3>AngleAxisFromQuaternion<span class="sig">(Quaternion)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Converts a quaternion to angle-axis form. When the vector part is tiny
+            (essentially no rotation) it is returned directly, avoiding a division by zero.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody><tr><td><code>Quaternion</code></td><td>list[float]</td><td><code>[x, y, z, w]</code>.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — 3-element angle-axis whose norm is
+            the rotation angle in radians. Input containing <code>NaN</code> yields <code>[nan, nan, nan]</code>.</p>
+        </article>
+
+        <article class="api-item" id="AngleAxisFromMatrix">
+          <h3>AngleAxisFromMatrix<span class="sig">(RotMat)</span><span class="kind">pure function</span></h3>
+          <p class="desc"><code>QuaternionFromMatrix</code> followed by <code>AngleAxisFromQuaternion</code>;
+            this is exactly the representation Nexus uses to store segment orientation.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody><tr><td><code>RotMat</code></td><td>list[list[float]]</td><td>3×3 rotation matrix.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[float]</code> — 3-element angle-axis (radians).</p>
+<pre><code># Euler angles (degrees) → angle-axis (degrees), the form Plug-in Gait Bones expects
+import math
+R = ViconUtils.MatrixFromEuler([math.radians(d) for d in [rx, ry, rz]], 'xyz')
+aa_rad = ViconUtils.AngleAxisFromMatrix(R)
+aa_deg = [math.degrees(v) for v in aa_rad]</code></pre>
+        </article>
+
+        <article class="api-item" id="RotationMatrixFromAngleAxis">
+          <h3>RotationMatrixFromAngleAxis<span class="sig">(k)</span><span class="kind">pure function</span></h3>
+          <p class="desc">Angle-axis to rotation matrix (Rodrigues' formula). The norm of <code>k</code> is the
+            rotation angle; a near-zero norm returns the identity matrix.</p>
+          <table>
+            <thead><tr><th style="width:130px">Parameter</th><th style="width:150px">Type</th><th>Meaning</th></tr></thead>
+            <tbody><tr><td><code>k</code></td><td>list[float]</td><td>3-element angle-axis vector (radians).</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[list[float]]</code> — a 3×3 rotation matrix.</p>
+<pre><code>R = ViconUtils.RotationMatrixFromAngleAxis([0.0, 0.0, 0.5])
+# no rotation at all
+ViconUtils.RotationMatrixFromAngleAxis([0.0, 0.0, 0.0])
+# [[1, 0, 0], [0, 1, 0], [0, 0, 1]]</code></pre>
+        </article>
+
+        <h2 id="gait">Creating the Plug-in Gait outputs</h2>
+
+        <article class="api-item" id="CreateViconGaitModelOutputs">
+          <h3>CreateViconGaitModelOutputs<span class="sig">(ViconNexus)</span><span class="kind">write</span></h3>
+          <p class="desc">
+            Creates, <strong>for every subject in the current trial</strong>, the complete set of model
+            outputs named the way Vicon Plug-in Gait names them — <strong>99 outputs</strong> in total:
+            26 angles, 20 forces, 18 moments, 19 bones (PIG segments) and 16 powers. It is typically used
+            to make your own algorithm's results look like Plug-in Gait output so existing report templates
+            keep working.
+          </p>
+          <table>
+            <thead><tr><th style="width:150px">Parameter</th><th style="width:130px">Type</th><th>Meaning</th></tr></thead>
+            <tbody><tr><td><code>ViconNexus</code></td><td>ViconNexus</td><td>A connected SDK instance. <strong>Note it is positional and oddly named (capitalised)</strong>.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>None</code>. Failures are printed to stderr by the internal <code>CreateModelOutput</code> calls.</p>
+<pre><code>from viconnexusapi import ViconNexus, ViconUtils
+
+vicon = ViconNexus.ViconNexus()
+ViconUtils.CreateViconGaitModelOutputs(vicon)     # positional: do not write vicon=vicon</code></pre>
+          <div class="warn">
+            <b>Not idempotent</b>
+            Calling it again when the outputs already exist creates duplicates and reports errors
+            (to stderr); it does not overwrite. Check <code>GetModelOutputNames</code> first in batch scripts.
+          </div>
+          <table>
+            <thead><tr><th style="width:170px">Group</th><th>What gets created</th></tr></thead>
+            <tbody>
+              <tr><td><code>Angles</code></td><td><code>L/R</code> × (Ankle, Hip, Knee, Pelvis, Spine, Thorax, Neck, Head, Shoulder, Elbow, Wrist) Angles, plus <code>L/R</code>AbsAnkleAngle and <code>L/R</code>FootProgressAngles</td></tr>
+              <tr><td><code>Forces</code></td><td><code>L/R</code>GroundReactionForce (Force), <code>L/R</code>NormalisedGRF and per-joint forces (ForceNormalized)</td></tr>
+              <tr><td><code>Moments</code></td><td><code>L/R</code>GroundReactionMoment (Torque), per-joint moments (TorqueNormalized)</td></tr>
+              <tr><td><code>Powers</code></td><td>Per-joint power (PowerNormalized)</td></tr>
+              <tr><td><code>Plug-in Gait Bones</code></td><td><code>HED PEL LCL LFE LFO LHN LHU LRA LTI LTO RCL RFE RFO RHN RHU RRA RTI RTO TRX</code>, nine components each: <code>RX RY RZ TX TY TZ SX SY SZ</code></td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <h2 id="private">Internal helper</h2>
+        <table>
+          <thead><tr><th style="width:190px">Name</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>_safe_arcsin(value)</code></td><td>Clamps |value| &gt; 1 (floating-point drift) to ±1 before calling <code>asin</code>; used by <code>EulerFromMatrix</code>.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="related">Related</h2>
+        <div class="cards">
+          <a class="card" href="api-viconnexusutils.html#NexusSegment"><div class="t"><code>NexusSegment</code></div><div class="d">Wraps these maths into a segment object and handles the degree/radian conversion for you.</div></a>
+          <a class="card" href="api-datatypes.html#NexusForcePlate"><div class="t"><code>NexusForcePlate</code></div><div class="d">Its <code>WorldR/WorldT</code> feed straight into Globalise / Localise.</div></a>
+        </div>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

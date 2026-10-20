@@ -1,0 +1,36 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+wheelhouse/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Documentation build output
+docs/_build/
+site/
+
+# Stray probe files left by tooling / write-access checks
+*.tmp
+_scratch_probe.txt

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ · Vicon Nexus Python SDK</title>
+<meta name="description" content="Troubleshooting connection failures, Python versions, numpy compatibility, performance, timestamps and known defects.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span>FAQ</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>FAQ</h1>
+        <p class="lede">
+          Organized as “symptom → cause → fix”. Most problems come from three places: environment
+          bitness/version, error handling that is too quiet, and historical defects in the utils
+          package.
+        </p>
+
+        <h2 id="connect">Connecting and installing</h2>
+
+        <h3 id="q-ioerror">Constructing <code>ViconNexus()</code> raises <code>IOError: Unable to connect to Nexus</code></h3>
+        <table>
+          <thead><tr><th style="width:210px">Possible cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Nexus is not running / sign-in not finished</td><td>Open Nexus by hand first, get to the main window, then run the script</td></tr>
+            <tr><td>Connecting to a remote host</td><td>Check that the hostname in <code>ViconNexus('host')</code> resolves and that the firewall lets it through</td></tr>
+            <tr><td>Version mismatch</td><td>Verify with <code>GetServerInfo()</code>; the SDK and Nexus major versions must match</td></tr>
+            <tr><td>Nexus is in live mode or is running a pipeline</td><td>Stop acquisition, wait for the pipeline to finish, then retry</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="q-dll"><code>DLL load failed</code> on import / <code>ImportError: cannot import name _NexusClient3</code></h3>
+        <ul>
+          <li>Python bitness does not match the <code>.pyd</code> — the SDK ships 64-bit packages only, so a 64-bit interpreter is required.</li>
+          <li>Only the <code>.py</code> files were copied, without <code>_NexusClient3.pyd</code> and the <code>boost_*.dll</code> / <code>ViconSDKClientCPP.dll</code> in the same directory.</li>
+          <li>Install the package with <code>pip install</code> instead of copying individual files by hand — <code>MANIFEST.in</code> bundles the binaries with it.</li>
+        </ul>
+<pre><code>python -c "import sys; print(sys.maxsize &gt; 2**32)"   # must be True (64-bit)</code></pre>
+
+        <h3 id="q-numpy">utils raises <code>module 'numpy' has no attribute 'long'</code></h3>
+        <p>
+          <code>viconnexusutils</code> uses <code>np.long</code> and <code>np.bool</code>;
+          both aliases were removed in numpy 1.24.
+        </p>
+<pre><code>:: Option 1: pin an older numpy
+pip install "numpy&lt;1.24"
+
+:: Option 2: patch the source (two replacements, a global search is enough)
+::   np.long  → int
+::   np.bool  → bool</code></pre>
+
+        <h3 id="q-chinese">Non-ASCII paths / non-ASCII subject names fail</h3>
+        <p>
+          The facade applies <code>encode('utf-8')</code> to every string argument, so non-ASCII is
+          supported in principle. Under Python 2, however, source files are decoded as ASCII by
+          default, so any script containing non-ASCII characters must declare its encoding:
+        </p>
+<pre><code># -*- coding: utf-8 -*-
+from __future__ import unicode_literals</code></pre>
+        <p>On Python 3 just save the script as UTF-8. If it still fails, rename the item to pure ASCII inside Nexus first, to confirm whether the problem is really encoding.</p>
+
+        <h2 id="python3">Python 2 vs Python 3</h2>
+        <table>
+          <thead><tr><th style="width:230px">Symptom</th><th>Cause and fix</th></tr></thead>
+          <tbody>
+            <tr><td>Example script raises <code>SyntaxError</code></td><td>The official examples use Python 2 syntax (<code>print 'x'</code>, <code>xrange</code>, and <code>sys.exit</code> without parentheses). Convert them to <code>print()</code> and <code>range</code>.</td></tr>
+            <tr><td>String literals of the form <code>b'Colin'</code></td><td>The low level expects bytes; if you call <code>vicon.Client.*</code> directly you must <code>encode</code> yourself.</td></tr>
+            <tr><td>Return values come back as <code>bytes</code></td><td>This only happens when you bypass the facade. The facade decodes everything to <code>str</code> through <code>_get_safe_string_value()</code>.</td></tr>
+            <tr><td>Integer division differences</td><td><code>deviceRate / rate</code> is floor division in Py2 and true division in Py3. Write <code>//</code> when you need an integer; when you need a float, keep <code>/</code> and cast it with <code>int()</code> before using it in <code>range</code>.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="errors">Error handling</h2>
+
+        <p>
+          The SDK's error model is “quiet”: <strong>methods do not raise, they return <code>None</code>
+          or an empty list while printing the reason to <code>stderr</code></strong>. So the key to a
+          robust script is not <code>try/except</code> but <strong>read-back verification</strong>.
+        </p>
+
+        <table>
+          <thead><tr><th style="width:250px">Output you may see</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Strings such as <code>Subject not found</code></td><td>The low-level <code>ResultString()</code> was printed directly</td></tr>
+            <tr><td>Empty list / length 0</td><td>The read failed or the object does not exist (not “no data” — missing data returns a <code>False</code> list of the same length)</td></tr>
+            <tr><td>No output, but the data is unchanged</td><td>The write failed and the exception was swallowed</td></tr>
+          </tbody>
+        </table>
+
+<pre><code>def write_trajectory_safe(vicon, subject, marker, x, y, z, e):
+    vicon.GenerateErrors = False
+    try:
+        vicon.SetTrajectory(subject, marker, x, y, z, e)
+        got = vicon.GetTrajectory(subject, marker)
+    finally:
+        vicon.GenerateErrors = True
+
+    if len(got[0]) != len(x) or got[1][0] != y[0]:
+        raise RuntimeError('write did not take effect: ' + subject + '/' + marker)</code></pre>
+
+        <div class="tip">
+          <b>Three practices</b>
+          <ol style="margin:6px 0 0">
+            <li>Before a batch job starts, validate that the targets exist with <code>GetSubjectNames()</code> / <code>GetModelOutputNames()</code>.</li>
+            <li>After writing, read back a sample frame and compare.</li>
+            <li>Use <code>vicon.GenerateErrors = False</code> to suppress noise, but always pair it with read-back verification — otherwise errors become completely invisible.</li>
+          </ol>
+        </div>
+
+        <h2 id="performance">Performance</h2>
+        <table>
+          <thead><tr><th style="width:230px">Anti-pattern</th><th>Alternative</th></tr></thead>
+          <tbody>
+            <tr><td>Writing a whole trajectory frame by frame with <code>SetTrajectoryAtFrame</code></td><td><code>SetTrajectory</code> in a single call</td></tr>
+            <tr><td><code>SetDeviceChannelAtFrame</code> per frame</td><td><code>SetDeviceChannel</code> (the source explicitly warns that the former is slower)</td></tr>
+            <tr><td>Calling <code>GetModelOutputDetails</code> again for every subject</td><td>Cache it in a dict; one pass is enough</td></tr>
+            <tr><td>Running large loops in a script inside Nexus</td><td>Move it to an external process and batch with <code>OpenTrial</code>/<code>SaveTrial</code></td></tr>
+          </tbody>
+        </table>
+        <p>
+          Rule of thumb: a single call is in-process IPC, so the cost comes mainly from the number of
+          round trips rather than the data volume. Reading or writing a whole trajectory (thousands
+          of frames × dozens of channels) is usually far faster than a per-frame loop.
+        </p>
+
+        <h2 id="save">I changed the data but the file did not change</h2>
+        <p>
+          <code>Set*</code> modifies only the in-memory trial. Persisting it requires
+          <code>SaveTrial(timeout)</code>, and that must be called from an <strong>external</strong>
+          Python process — calling it from a script inside Nexus fails or hangs.
+        </p>
+<pre><code>vicon.SetModelOutput(subject, 'MyOutput', data, exists)
+vicon.SaveTrial(30)          # external process only
+# or: defer all saving to the end; from an inside script, ask the user to save in Nexus</code></pre>
+
+        <h2 id="timeouts">Timeouts and pipelines</h2>
+        <ul>
+          <li>The <code>timeout</code> on <code>OpenTrial</code> / <code>SaveTrial</code> / <code>CloseTrial</code> / <code>RunPipeline</code>
+              is only a <strong>client-side wait limit</strong>; after it expires the action in the host may still be running.</li>
+          <li>After a timeout, do not send the next command immediately — poll the state first (for example, whether <code>GetTrialName()</code> has changed).</li>
+          <li>While a pipeline is running you cannot open or save a trial, nor start another pipeline.</li>
+          <li>With unsaved data, <code>OpenTrial</code> may pop up a host dialog that blocks automation — call <code>SaveTrial</code> first.</li>
+        </ul>
+
+        <h2 id="threading">Multithreading / concurrency</h2>
+        <p>
+          The client talks to Nexus over a serial command model. Using one <code>ViconNexus</code>
+          instance from several threads produces mismatched responses; use a single thread plus a
+          queue, or create one connection per thread (not recommended — the host side is still
+          serial).
+        </p>
+
+        <h2 id="known-issues">Known issues and documentation errata</h2>
+
+        <h3 id="docstring-bugs">Source docstrings that disagree with actual behaviour</h3>
+        <table>
+          <thead><tr><th style="width:290px">Method</th><th>Problem</th></tr></thead>
+          <tbody>
+            <tr><td><a href="api-viconnexus.html#GetSubjectParamDetails"><code>GetSubjectParamDetails</code></a></td><td>Returns 5 values, but the example unpacks only 4</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetAnalysisParamDetails"><code>GetAnalysisParamDetails</code></a></td><td>Returns 3 values, but the example unpacks 4</td></tr>
+            <tr><td><a href="api-viconnexus.html#CreateAnEvent"><code>CreateAnEvent</code></a></td><td>The example has context and event in the wrong order</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetSplineResults"><code>GetSplineResults</code></a></td><td>The parameter table was copied from <code>SubmitSplineTrajectory</code>; the method actually takes one argument</td></tr>
+            <tr><td><a href="api-viconnexus.html#GetDeviceIDFromName"><code>GetDeviceIDFromName</code></a></td><td>Documented as returning a string; it actually returns an integer ID</td></tr>
+            <tr><td><code>GetAnalysisParam</code> and others</td><td>The examples still use the Python 2 <code>print</code> statement</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="utils-bugs">Defects in viconnexusutils 1.0.0</h3>
+        <table>
+          <thead><tr><th style="width:270px">Location</th><th>Symptom</th></tr></thead>
+          <tbody>
+            <tr><td><code>NexusAngles.Read</code></td><td>Boolean mask dimension mismatch; raises <code>IndexError</code> when the frame count is &gt; 3</td></tr>
+            <tr><td><code>NexusAngles.mean</code></td><td>Writes to a non-existent <code>_position</code>, so the result is all <code>NaN</code></td></tr>
+            <tr><td><code>NexusSegment.Scale</code></td><td>Returns <code>_orientation</code> instead of <code>_scale</code></td></tr>
+            <tr><td><code>NexusSegment.mean</code></td><td>Ends with a bare <code>pass</code> and returns <code>None</code></td></tr>
+            <tr><td><code>NexusSegment.__rmul__</code></td><td>Returns <code>None</code> (so <code>seg * traj</code> yields None)</td></tr>
+            <tr><td><code>SetPosition/SetOrientation/SetScale</code></td><td>Frame index is not decremented by <code>-1</code>, inconsistent with the read methods (0-based vs 1-based)</td></tr>
+            <tr><td><code>Write</code> gap filling</td><td>The <code>frames+1:</code> slice skips one frame</td></tr>
+          </tbody>
+        </table>
+        <p>Suggested fix: for code that goes through these paths, write it yourself with <code>ViconNexus</code> plus numpy instead of routing through utils.</p>
+
+        <h3 id="example-bugs">Small traps in the example scripts</h3>
+        <ul>
+          <li><code>DetectFootEvents.py</code>: <code>trajExists[idx]</code> indexes a 0-based list with a 1-based frame number, off by one frame; <code>SamplesPerFrame</code> becomes a float under Py3.</li>
+          <li><code>GapFilling/ProcessGaps.py</code>: <code>E</code> is undefined when the gap length is 0.</li>
+          <li>Most examples never call <code>Disconnect()</code>; if you run repeatedly over a long period, add it yourself.</li>
+        </ul>
+
+        <h2 id="deploy">About this documentation site</h2>
+        <table>
+          <thead><tr><th style="width:200px">Question</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Can I read it offline</td><td>Yes. Double-click <code>docs/index.html</code>; no CDN, no build step.</td></tr>
+            <tr><td>How do I publish it</td><td>Push to GitHub, then Settings → Pages and choose <code>/docs</code>; or let a workflow in the repository deploy it automatically.</td></tr>
+            <tr><td>Why not Sphinx / Doxygen</td><td>Those require extra build tooling to be installed. This approach depends on the browser only.</td></tr>
+            <tr><td>How does search work</td><td><code>docs/assets/search-index.en.js</code> is a hand-maintained index; matching is pure front-end, with no network requests.</td></tr>
+          </tbody>
+        </table>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

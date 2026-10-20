@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vicon Nexus Python SDK · 文档</title>
+<meta name="description" content="Vicon Nexus 2.12 Python SDK 完整 API 参考：ViconNexus、ViconUtils、viconnexusutils 与底层客户端。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span>概览</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Vicon Nexus Python SDK</h1>
+        <p class="lede">
+          通过 Python 读写 Vicon Nexus 中的试次数据：标记点轨迹、骨骼段与关节、模型输出、
+          测力台与眼动仪通道、事件、参数，以及试次与 Pipeline 控制。
+          本页是完整的中文 API 参考文档，覆盖 SDK 的四个 Python 模块与底层 SWIG 客户端。
+        </p>
+
+        <div class="pill-row">
+          <span class="pill">Python 2.7 / 3.x</span>
+          <span class="pill">Windows x64</span>
+          <span class="pill">Nexus 2.12</span>
+          <span class="pill">MIT License</span>
+          <span class="pill">零外部依赖安装</span>
+        </div>
+
+        <div class="cards">
+          <a class="card" href="getting-started.html">
+            <div class="t">快速开始</div>
+            <div class="d">安装 wheel、连接 Nexus、跑通第一个读写脚本。</div>
+          </a>
+          <a class="card" href="api-viconnexus.html">
+            <div class="t"><code>ViconNexus</code></div>
+            <div class="d">69 个方法：轨迹、模型输出、设备通道、事件、试次控制。</div>
+          </a>
+          <a class="card" href="api-viconnexusutils.html">
+            <div class="t"><code>viconnexusutils</code></div>
+            <div class="d">基于 numpy 的轨迹 / 角度 / 骨骼段面向对象封装。</div>
+          </a>
+          <a class="card" href="examples.html">
+            <div class="t">示例脚本</div>
+            <div class="d">官方 8 个示例的用途、调用方式与关键代码。</div>
+          </a>
+        </div>
+
+        <h2 id="what">这是什么</h2>
+        <p>
+          Vicon Nexus 自带一套 Python SDK，用于在外部 Python 进程或 Nexus 内部脚本环境中
+          访问当前加载的试次（trial）。SDK 由两个可安装包组成：
+        </p>
+
+        <table>
+          <thead>
+            <tr><th style="width:210px">包</th><th style="width:110px">版本</th><th>作用</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>viconnexusapi</code></td>
+              <td>1.0.3</td>
+              <td>核心 API。<code>ViconNexus</code> 门面类、<code>ViconUtils</code> 数学与建模工具、
+                  以及 SWIG 生成的底层客户端 <code>NexusClient</code> / <code>NexusClient3</code>。</td>
+            </tr>
+            <tr>
+              <td><code>viconnexusutils</code></td>
+              <td>1.0.0</td>
+              <td>可选的高层封装：<code>NexusTrajectory</code>、<code>NexusAngles</code>、
+                  <code>NexusSegment</code>，依赖 <code>numpy</code> 与 <code>six</code>。</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          两个包都以 Windows 预编译二进制（<code>.pyd</code> / <code>.dll</code>）形式分发，
+          不需要本地 C++ 编译环境；但也因此<strong>只能在 Windows x64 上运行</strong>。
+        </p>
+
+        <h2 id="quickstart">30 秒上手</h2>
+        <p>
+          确认 Nexus 已启动并加载了一个试次，然后：
+        </p>
+
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()          # 连接 localhost 上正在运行的 Nexus
+try:
+    print(vicon.GetServerInfo())          # ('Nexus', 2, 12, ...)
+    print(vicon.GetTrialName())           # ('C:\\...\\Walking 2', 'Walking 2')
+    print(vicon.GetSubjectNames())        # ['Colin']
+    print(vicon.GetFrameCount(), vicon.GetFrameRate())
+
+    x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+    print(x[0], y[0], z[0], e[0])
+finally:
+    vicon.Disconnect()</code></pre>
+
+        <div class="note">
+          <b>要点</b>
+          构造 <code>ViconNexus()</code> 就等于建立连接；连不上会直接抛
+          <code>IOError("Unable to connect to Nexus")</code>。多数读写接口不会抛异常，
+          而是把错误信息打印到 <code>stderr</code>，具体行为见
+          <a href="api-viconnexus.html#GenerateErrors">GenerateErrors</a>。
+        </div>
+
+        <h2 id="modules">模块一览</h2>
+
+        <table>
+          <thead>
+            <tr><th style="width:260px">模块 / 类</th><th>内容</th><th style="width:90px">文档</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>viconnexusapi.ViconNexus.ViconNexus</code></td><td>对外主入口，全部数据读写方法</td><td><a href="api-viconnexus.html">查看</a></td></tr>
+            <tr><td><code>viconnexusapi.ViconNexus.ViconNexusException</code></td><td>SDK 异常类型</td><td><a href="api-viconnexus.html#ViconNexusException">查看</a></td></tr>
+            <tr><td><code>viconnexusapi.ViconUtils</code></td><td>旋转表示换算、坐标变换、Plug-in Gait 输出批量创建</td><td><a href="api-viconutils.html">查看</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusForcePlate</code></td><td>测力台几何信息数据类</td><td><a href="api-datatypes.html#NexusForcePlate">查看</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusEyeTracker</code></td><td>眼动仪信息数据类</td><td><a href="api-datatypes.html#NexusEyeTracker">查看</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusClient3</code></td><td>SWIG 底层客户端与 <code>Output_*</code> 返回值类型</td><td><a href="api-lowlevel.html">查看</a></td></tr>
+            <tr><td><code>viconnexusutils.*</code></td><td><code>NexusObject</code> / <code>NexusTrajectory</code> / <code>NexusAngles</code> / <code>NexusSegment</code></td><td><a href="api-viconnexusutils.html">查看</a></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="capabilities">能力概览</h2>
+
+        <table>
+          <thead>
+            <tr><th style="width:150px">能力域</th><th>可读</th><th>可写</th><th style="width:120px">入口</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>试次 / 帧</td><td>帧数、帧率、可更新区间、ROI、名称路径</td><td>ROI</td><td><a href="api-viconnexus.html#trial">试次</a></td></tr>
+            <tr><td>标记点轨迹</td><td>全部帧、单帧、存在性、未标注轨迹</td><td>全部帧、单帧</td><td><a href="api-viconnexus.html#trajectory">轨迹</a></td></tr>
+            <tr><td>骨骼段 / 关节</td><td>段名、父子关系、关联标记点、关节</td><td>—</td><td><a href="api-viconnexus.html#segment">骨骼段</a></td></tr>
+            <tr><td>模型输出</td><td>分量、量纲、全部帧、单帧</td><td>新建、全部帧、单帧</td><td><a href="api-viconnexus.html#modeloutput">模型输出</a></td></tr>
+            <tr><td>参数</td><td>受试者参数、分析参数</td><td>修改与新建</td><td><a href="api-viconnexus.html#param">参数</a></td></tr>
+            <tr><td>事件</td><td>按上下文/类型查询</td><td>创建、清空</td><td><a href="api-viconnexus.html#event">事件</a></td></tr>
+            <tr><td>模拟设备</td><td>设备/输出/通道三级信息与采样</td><td>通道数据</td><td><a href="api-viconnexus.html#device">设备</a></td></tr>
+            <tr><td>样条</td><td>插值结果的 1/2 阶导数</td><td>提交散点</td><td><a href="api-viconnexus.html#spline">样条</a></td></tr>
+            <tr><td>试次控制</td><td>—</td><td>打开、保存、关闭、运行 Pipeline</td><td><a href="api-viconnexus.html#trialops">试次操作</a></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="limits">已知限制</h2>
+        <ul>
+          <li><strong>仅 Windows x64。</strong>SDK 依赖 <code>ViconSDKClientCPP.dll</code>、<code>_NexusClient3.pyd</code> 等预编译二进制。</li>
+          <li><strong>必须已有 Nexus 进程。</strong>SDK 是客户端，不自带数据层；<code>OpenTrial</code> 等命令也由宿主应用执行。</li>
+          <li><strong>脚本环境有差别。</strong>在 Nexus 内部运行的脚本不能调用 <code>OpenTrial</code> / <code>SaveTrial</code> / <code>CloseTrial</code> / <code>RunPipeline</code>。</li>
+          <li><strong>错误处理偏“安静”。</strong>大部分方法返回 <code>None</code>，失败只打印到 <code>stderr</code>，需自行校验读回值。</li>
+          <li><strong>部分 utils 方法未完成。</strong>见 <a href="faq.html#known-issues">已知问题</a>。</li>
+        </ul>
+
+        <h2 id="conventions">文档约定</h2>
+        <dl class="kv">
+          <dt><span class="tag ro">读</span></dt><dd>只读取数据，不修改试次</dd>
+          <dt><span class="tag rw">写</span></dt><dd>会修改 Nexus 内存中的试次数据（需保存才落盘）</dd>
+          <dt><span class="tag host">宿主</span></dt><dd>需要宿主应用配合，且不能在 Nexus 内部脚本中使用</dd>
+        </dl>
+        <p>
+          签名中的类型标注取自源码文档字符串与实现代码；<code>frame</code> 一律指
+          “应用时间条上显示的帧号”，<strong>从 1 开始</strong>；列表索引则从 0 开始。
+        </p>
+
+        <div class="tip">
+          <b>离线可用</b>
+          本站在 <code>file://</code> 下同样可用（直接双击 <code>docs/index.html</code>），
+          不加载任何 CDN 资源；部署到 GitHub Pages 后行为一致。
+        </div>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+      <span><a href="faq.html">常见问题</a></span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

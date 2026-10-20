@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Example scripts · Vicon Nexus Python SDK</title>
+<meta name="description" content="What each of the 8 official example scripts does, how to invoke it, the key code, and the caveats.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span>Example scripts</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Example scripts</h1>
+        <p class="lede">
+          The SDK ships 8 examples covering the usual range of tasks, from "read the data out and have a look"
+          to "batch gap filling and foot event detection". They are the quickest way into how the API is used,
+          but <strong>they are all Python 2 syntax</strong>: to run them under Python 3 you have to change
+          <code>print</code> and <code>xrange</code>.
+        </p>
+
+        <table>
+          <thead><tr><th style="width:230px">Script</th><th>What it does</th><th style="width:120px">Arguments</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#DisplayTrialInfo"><code>DisplayTrialInfo.py</code></a></td><td>Prints the trial summary and the device list</td><td>None</td></tr>
+            <tr><td><a href="#DisplaySubjectInfo"><code>DisplaySubjectInfo.py</code></a></td><td>Prints a subject's markers / segments / joints / parameters</td><td>Subject name</td></tr>
+            <tr><td><a href="#DisplayModelOutputInfo"><code>DisplayModelOutputInfo.py</code></a></td><td>Lists model outputs by group, with component quantity types</td><td>Subject name</td></tr>
+            <tr><td><a href="#SimpleMidpoint"><code>SimpleMidpoint.py</code></a></td><td>Creates a modeled marker at the midpoint of two points</td><td>Subject + 2 markers + output name</td></tr>
+            <tr><td><a href="#DetectFootEvents"><code>DetectFootEvents.py</code></a></td><td>Detects foot strike / foot off from a force threshold and writes events</td><td>Hard-coded in the script</td></tr>
+            <tr><td><a href="#ProcessGaps"><code>GapFilling/ProcessGaps.py</code></a></td><td>Linear interpolation function (imported by the other scripts)</td><td>—</td></tr>
+            <tr><td><a href="#FillGaps"><code>GapFilling/FillGaps.py</code></a></td><td>Batch filling of small gaps</td><td>—</td></tr>
+            <tr><td><a href="#NexusConformityTest"><code>NexusConformityTest.py</code></a></td><td>Installation acceptance: mean / SD of the wand point distance</td><td>None (run it in a pipeline)</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="run">How to run</h2>
+        <p>Two modes, depending on whether the script calls <code>OpenTrial</code> / <code>SaveTrial</code> / <code>RunPipeline</code>:</p>
+<pre><code>:: Mode A: external process (recommended, full capabilities)
+python DisplayTrialInfo.py
+
+:: Mode B: inside Nexus — add a "Run Python Operation" to a Pipeline
+:: fine as one step of a processing flow, but it cannot open or close trials</code></pre>
+        <p>
+          The examples' <code>if __name__ == "__main__":</code> block takes its arguments directly from
+          <code>sys.argv</code>, so on the command line you have to supply whatever each script expects.
+        </p>
+
+        <h2 id="DisplayTrialInfo">DisplayTrialInfo.py</h2>
+        <p>The smallest "read something" example: trial name, path, frame count, frame rate, updatable range, subject list, device list.</p>
+<pre><code>(path, name) = vicon.GetTrialName()
+framecount = vicon.GetFrameCount()
+framerate  = vicon.GetFrameRate()
+(startFrame, endFrame) = vicon.GetTrialRange()
+
+for deviceID in vicon.GetDeviceIDs():
+    deviceDetails = vicon.GetDeviceDetails(deviceID)
+    deviceName, deviceType, deviceRate = deviceDetails[0:3]
+    print 'Device', deviceID, deviceName, deviceType, deviceRate</code></pre>
+        <p>
+          It uses <a href="api-viconnexus.html#GetTrialName">GetTrialName</a>,
+          <a href="api-viconnexus.html#GetFrameCount">GetFrameCount</a>,
+          <a href="api-viconnexus.html#GetTrialRange">GetTrialRange</a>,
+          <a href="api-viconnexus.html#GetDeviceIDs">GetDeviceIDs</a> and
+          <a href="api-viconnexus.html#GetDeviceDetails">GetDeviceDetails</a>.
+          Note that it has <strong>no</strong> <code>Disconnect()</code>; that is harmless for a one-shot script.
+        </p>
+
+        <h2 id="DisplaySubjectInfo">DisplaySubjectInfo.py</h2>
+        <p>A subject profile: marker list → the markers associated with each bone segment → joint parent and child segments → static parameter values.</p>
+<pre><code>for Segment in vicon.GetSegmentNames(subject):
+    markers = vicon.GetSegmentDetails(subject, Segment)[-1]
+    print Segment, markers
+
+for Joint in vicon.GetJointNames(subject):
+    (parent, child) = vicon.GetJointDetails(subject, Joint)
+    print Joint, '[', parent, '-', child, ']'
+
+for param in vicon.GetSubjectParamNames(subject):
+    value = vicon.GetSubjectParamDetails(subject, param)[0]
+    unit  = vicon.GetSubjectParamDetails(subject, param)[1]</code></pre>
+        <p>
+          <code>GetSegmentDetails(...)[-1]</code> takes the third return value (markers).
+          The parameter block calls <code>GetSubjectParamDetails</code> twice in a row, which is a redundant
+          round trip — when writing your own, it is better to merge them into a single unpacking.
+        </p>
+<pre><code>python DisplaySubjectInfo.py Colin</code></pre>
+
+        <h2 id="DisplayModelOutputInfo">DisplayModelOutputInfo.py</h2>
+        <p>
+          First collect every group name and sort it, then list the output names group by group, and finally
+          expand the components and quantity types of each output. Good for scouting ahead before you write a
+          batch script, to confirm which outputs are actually available in the target trial.
+        </p>
+<pre><code>for groupName in sorted(set of groups):
+    for ModelOutputName in outputs_in_group:
+        components = vicon.GetModelOutputDetails(subject, ModelOutputName)[1]
+        types      = vicon.GetModelOutputDetails(subject, ModelOutputName)[2]
+        # output looks like: LHipAngles [X(Angle), Y(Angle), Z(Angle)]</code></pre>
+        <p>Sample output:</p>
+<pre><code>Model Outputs:
+Angles
+  LHipAngles [X(Angle), Y(Angle), Z(Angle)]
+Forces
+  LGroundReactionForce [X(Force), Y(Force), Z(Force)]
+Plug-in Gait Bones
+  HED [RX(Angle), RY(Angle), RZ(Angle), TX(Length), ...]</code></pre>
+
+        <h2 id="SimpleMidpoint">SimpleMidpoint.py</h2>
+        <p>
+          Writes the midpoint of two markers into a new modeled marker. It demonstrates the whole
+          "create output → read inputs → compute → write back" loop, and is the most common template for
+          generating a custom point.
+        </p>
+<pre><code>vicon.CreateModeledMarker(subject, name)          # create the container first
+
+(X1, Y1, Z1, E1) = vicon.GetTrajectory(subject, marker1)
+(X2, Y2, Z2, E2) = vicon.GetTrajectory(subject, marker2)
+
+(data, exists) = vicon.GetModelOutput(subject, name)
+for i in range(vicon.GetFrameCount()):
+    if E1[i] and E2[i]:
+        exists[i] = True
+        data[0][i] = (X1[i] + X2[i]) / 2.0
+        data[1][i] = (Y1[i] + Y2[i]) / 2.0
+        data[2][i] = (Z1[i] + Z2[i]) / 2.0
+    else:
+        exists[i] = False
+
+vicon.SetModelOutput(subject, name, data, exists)</code></pre>
+<pre><code>python SimpleMidpoint.py Colin RKNE RANK MyMidpoint</code></pre>
+        <div class="note">
+          <b>Key point</b>
+          If either input is missing the whole frame is marked as non-existent, rather than keeping only the
+          point that is valid — this "all or nothing" policy is usually the right one for geometrically
+          derived points.
+        </div>
+
+        <h2 id="DetectFootEvents">DetectFootEvents.py</h2>
+        <p>
+          The most complete example: it iterates every force plate, decides stance from a total force threshold
+          (20 N by default), uses "the nearest marker falls inside the plate bounds" to determine the
+          Left / Right context, and finally creates <code>Foot Strike</code> / <code>Foot Off</code> events.
+          It also shows how to convert sample indices when the device sample rate is higher than the frame rate.
+        </p>
+        <p>Key steps:</p>
+<ol>
+  <li>Find devices with <code>GetDeviceIDs</code> and filter on <code>GetDeviceDetails()[1] == 'ForcePlate'</code>.</li>
+  <li>Locate channels with <code>GetDeviceOutputIDFromName(id, 'Force')</code> + <code>GetDeviceChannelIDFromName(..., 'Fx'/'Fy'/'Fz')</code>.</li>
+  <li>Forces are read with <code>GetDeviceChannelGlobal</code> (global coordinates), CoP with <code>GetDeviceChannel</code> (local, then divided by <code>/1000</code> by hand to convert to m).</li>
+  <li>Compute the total force magnitude for every sample of every frame; crossing the threshold together with <code>Fz &lt; 0</code> counts as foot contact.</li>
+  <li>Use <code>ViconUtils.Globalise/Localise</code> to transform the candidate markers into plate-local coordinates, test whether they fall within
+      <code>LowerBounds…UpperBounds</code>, and take the nearest one to decide the side.</li>
+  <li>Check for duplicates with <code>GetEvents</code> before writing an event, to avoid labelling the same footfall twice.</li>
+</ol>
+<pre><code>vicon = ViconNexus.ViconNexus()
+vicon.ClearAllEvents()
+eventDetector = DetectFootEvents()
+eventDetector.FindEvents(vicon, "Colin", 20.0, "LTOE", "LANK", "RTOE", "RANK")</code></pre>
+        <div class="warn">
+          <b>Change three things before you copy it</b>
+          <ul style="margin:6px 0 0">
+            <li>The subject name and the four marker names are hard-coded in <code>__main__</code>.</li>
+            <li>Mixed indexing: in <code>trajExists[idx]</code> the <code>idx</code> starts at <code>startFrame</code> (1-based) while the list is 0-based, so in practice it is off by one frame.</li>
+            <li><code>SamplesPerFrame = deviceRate / rate</code> is integer division in Python 2 but a float in Python 3, and the following <code>range</code> then blows up. Use <code>int(...)</code>.</li>
+          </ul>
+        </div>
+
+        <h2 id="ProcessGaps">GapFilling/ProcessGaps.py</h2>
+        <p>Only 32 lines: given the frame numbers on either side of a gap and the trajectory arrays, it interpolates
+          linearly and returns the filled <code>(X, Y, Z, E)</code>. It is a pure function that never touches Nexus,
+          which makes it easy to unit test.</p>
+<pre><code>def ProcessGaps(startGapFrame, endGapFrame, trajX, trajY, trajZ):
+    dataX1, dataX2 = trajX[startGapFrame], trajX[endGapFrame]
+    for frameNum in range(startGapFrame + 1, endGapFrame):
+        x = dataX1 + (dataX2 - dataX1) * (frameNum - startGapFrame) \
+            / (endGapFrame - startGapFrame)
+        ...
+    return (X, Y, Z, E)</code></pre>
+        <div class="note">
+          <b>Two details</b>
+          The returned <code>E</code> is only assigned inside the loop, so a gap of length 0 (start and end
+          adjacent) raises an <code>UnboundLocalError</code>; also, interpolation happens only
+          <strong>inside</strong> the gap — missing endpoints are not handled.
+        </div>
+
+        <h2 id="FillGaps">GapFilling/FillGaps.py</h2>
+        <p>
+          The batch wrapper: first scan the <code>GetTrialRange()</code> interval for gaps, then measure the
+          length of each gap, fill only those no longer than <code>MaxGap</code>, and finally write back with
+          <code>SetTrajectory</code>.
+        </p>
+<pre><code>subjects = vicon.GetSubjectNames()
+markers  = ['LTOE', 'RTOE']
+FillGaps(vicon, subjects, markers, 4)      # fill at most 4 frames</code></pre>
+        <ol>
+  <li><code>GetTrajectory</code> fetches the full data and the existence flags.</li>
+  <li>Find the first and the last frame with valid data to bound the processing interval (endpoints are not interpolated).</li>
+  <li>A difference &gt; 1 between adjacent valid frame numbers is a gap; record <code>(frame before, frame after)</code> and its length.</li>
+  <li>Gaps with a length ≤ <code>MaxGap</code> are filled by calling <code>ProcessGaps</code>.</li>
+  <li><code>SetTrajectory</code> writes the whole trajectory back in one call.</li>
+</ol>
+        <div class="tip">
+          <b>This is the "minimum viable" gap-filling strategy</b>
+          Linear interpolation only suits small gaps (≤4 frames). For large gaps, prefer Woltring / Pattern fill
+          inside Nexus first, or switch to a spline (<a href="api-viconnexus.html#SubmitSplineTrajectory">SubmitSplineTrajectory</a>).
+        </div>
+
+        <h2 id="NexusConformityTest">NexusConformityTest.py</h2>
+        <p>
+          An acceptance script for installation engineers (v1.1, 2019-03-07): for a trial captured with a
+          calibration wand, it computes the mean and standard deviation of the distance between the two points
+          on the wand, to judge whether system accuracy meets the factory specification.
+        </p>
+        <p>Prerequisites (as stated in the script header):</p>
+        <ol>
+  <li>Create a new session and delete the subject files in it.</li>
+  <li>Capture a calibration wand trial (active or passive) with ≥1000 frames and 5 markers.</li>
+  <li>Load the matching VSK (e.g. <code>…\CalibrationObjects\Active Wand v2.vsk</code>).</li>
+  <li>Reconstruct + Label.</li>
+  <li>Run this script from a pipeline with <em>Run Python Operation</em>.</li>
+</ol>
+        <p>The output goes to the Nexus Log, and it additionally produces two text files and one CSV to fill into the acceptance document.</p>
+<pre><code>class Trajectory(object):
+    def GetData(self, subject_name):
+        self.x, self.y, self.z, self.occluded = v.GetTrajectory(subject_name, self.name)
+
+def GetDistance(m1, m2, frame):
+    return ((m1.x[frame]-m2.x[frame])**2 +
+            (m1.y[frame]-m2.y[frame])**2 +
+            (m1.z[frame]-m2.z[frame])**2) ** 0.5</code></pre>
+        <p>
+          It is a self-contained script rather than a reusable library: at module level it does
+          <code>v = ViconNexus.ViconNexus()</code> directly, so importing it connects. It has limited value as an
+          API usage reference, but it is a decent template for how to write a complete batch script.
+        </p>
+
+        <h2 id="patterns">Patterns distilled from the examples</h2>
+        <table>
+          <thead><tr><th style="width:190px">Pattern</th><th>Code skeleton</th></tr></thead>
+          <tbody>
+            <tr><td>Iterate subjects × markers</td><td><code>for s in vicon.GetSubjectNames(): for m in vicon.GetMarkerNames(s): …</code></td></tr>
+            <tr><td>Create derived data</td><td><code>CreateModeledMarker</code> → <code>GetModelOutput</code> → modify → <code>SetModelOutput</code></td></tr>
+            <tr><td>Safe writes across missing frames</td><td>Set <code>False</code> per frame through the <code>exists</code> list, fill the coordinates with 0</td></tr>
+            <tr><td>Replace the whole array, not frame by frame</td><td><code>SetTrajectory</code> / <code>SetDeviceChannel</code> write everything in one call</td></tr>
+            <tr><td>Idempotence</td><td>Check for duplicates with <code>Get*Names</code> before creating; with <code>GetEvents</code> before writing events</td></tr>
+          </tbody>
+        </table>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

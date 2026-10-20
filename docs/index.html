@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vicon Nexus Python SDK · Documentation</title>
+<meta name="description" content="Complete API reference for the Vicon Nexus 2.12 Python SDK: ViconNexus, ViconUtils, viconnexusutils and the low-level client.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span>Overview</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Vicon Nexus Python SDK</h1>
+        <p class="lede">
+          Read and write trial data in Vicon Nexus from Python: marker trajectories, segments and
+          joints, model outputs, force plate and eye tracker channels, events, parameters, plus
+          trial and pipeline control. This is the complete English API reference for the SDK's four
+          Python modules and the underlying SWIG client.
+        </p>
+
+        <div class="pill-row">
+          <span class="pill">Python 2.7 / 3.x</span>
+          <span class="pill">Windows x64</span>
+          <span class="pill">Nexus 2.12</span>
+          <span class="pill">MIT License</span>
+          <span class="pill">Zero install dependencies</span>
+        </div>
+
+        <div class="cards">
+          <a class="card" href="getting-started.html">
+            <div class="t">Quick start</div>
+            <div class="d">Install the wheel, connect to Nexus, get a read/write script running.</div>
+          </a>
+          <a class="card" href="api-viconnexus.html">
+            <div class="t"><code>ViconNexus</code></div>
+            <div class="d">69 methods: trajectories, model outputs, device channels, events, trial control.</div>
+          </a>
+          <a class="card" href="api-viconnexusutils.html">
+            <div class="t"><code>viconnexusutils</code></div>
+            <div class="d">numpy-backed object wrappers for trajectories, angles and segments.</div>
+          </a>
+          <a class="card" href="examples.html">
+            <div class="t">Example scripts</div>
+            <div class="d">What each of the 8 official examples does, and the key lines.</div>
+          </a>
+        </div>
+
+        <h2 id="what">What this is</h2>
+        <p>
+          Vicon Nexus ships a Python SDK for reaching the currently loaded trial, either from an
+          external Python process or from a script running inside Nexus. The SDK is distributed as
+          two installable packages:
+        </p>
+
+        <table>
+          <thead>
+            <tr><th style="width:210px">Package</th><th style="width:110px">Version</th><th>Role</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>viconnexusapi</code></td>
+              <td>1.0.3</td>
+              <td>Core API. The <code>ViconNexus</code> facade, the <code>ViconUtils</code> math and
+                  modelling helpers, and the SWIG-generated clients <code>NexusClient</code> /
+                  <code>NexusClient3</code>.</td>
+            </tr>
+            <tr>
+              <td><code>viconnexusutils</code></td>
+              <td>1.0.0</td>
+              <td>Optional higher-level wrappers: <code>NexusTrajectory</code>,
+                  <code>NexusAngles</code>, <code>NexusSegment</code>. Depends on <code>numpy</code>
+                  and <code>six</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Both packages ship as pre-built Windows binaries (<code>.pyd</code> / <code>.dll</code>),
+          so no local C++ toolchain is required — but that also means they
+          <strong>only run on Windows x64</strong>.
+        </p>
+
+        <h2 id="quickstart">30-second start</h2>
+        <p>
+          Make sure Nexus is running with a trial loaded, then:
+        </p>
+
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()          # connect to Nexus on localhost
+try:
+    print(vicon.GetServerInfo())          # ('Nexus', 2, 12, ...)
+    print(vicon.GetTrialName())           # ('C:\\...\\Walking 2', 'Walking 2')
+    print(vicon.GetSubjectNames())        # ['Colin']
+    print(vicon.GetFrameCount(), vicon.GetFrameRate())
+
+    x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+    print(x[0], y[0], z[0], e[0])
+finally:
+    vicon.Disconnect()</code></pre>
+
+        <div class="note">
+          <b>Key point</b>
+          Constructing <code>ViconNexus()</code> is connecting. If it cannot reach Nexus it raises
+          <code>IOError("Unable to connect to Nexus")</code>. Most read/write calls do <em>not</em>
+          raise; they print the failure reason to <code>stderr</code> instead — see
+          <a href="api-viconnexus.html#GenerateErrors">GenerateErrors</a>.
+        </div>
+
+        <h2 id="modules">Modules at a glance</h2>
+
+        <table>
+          <thead>
+            <tr><th style="width:260px">Module / class</th><th>Contents</th><th style="width:90px">Docs</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>viconnexusapi.ViconNexus.ViconNexus</code></td><td>The main entry point; every data access method</td><td><a href="api-viconnexus.html">View</a></td></tr>
+            <tr><td><code>viconnexusapi.ViconNexus.ViconNexusException</code></td><td>The SDK's exception type</td><td><a href="api-viconnexus.html#ViconNexusException">View</a></td></tr>
+            <tr><td><code>viconnexusapi.ViconUtils</code></td><td>Rotation conversions, coordinate transforms, Plug-in Gait output creation</td><td><a href="api-viconutils.html">View</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusForcePlate</code></td><td>Force plate geometry data class</td><td><a href="api-datatypes.html#NexusForcePlate">View</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusEyeTracker</code></td><td>Eye tracker data class</td><td><a href="api-datatypes.html#NexusEyeTracker">View</a></td></tr>
+            <tr><td><code>viconnexusapi.NexusClient3</code></td><td>SWIG low-level client and the <code>Output_*</code> result types</td><td><a href="api-lowlevel.html">View</a></td></tr>
+            <tr><td><code>viconnexusutils.*</code></td><td><code>NexusObject</code> / <code>NexusTrajectory</code> / <code>NexusAngles</code> / <code>NexusSegment</code></td><td><a href="api-viconnexusutils.html">View</a></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="capabilities">Capability overview</h2>
+
+        <table>
+          <thead>
+            <tr><th style="width:150px">Area</th><th>Readable</th><th>Writable</th><th style="width:120px">Entry</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Trial / frames</td><td>frame count, frame rate, updatable range, ROI, name/path</td><td>ROI</td><td><a href="api-viconnexus.html#trial">Trial</a></td></tr>
+            <tr><td>Marker trajectories</td><td>all frames, single frame, existence, unlabeled trajectories</td><td>all frames, single frame</td><td><a href="api-viconnexus.html#trajectory">Trajectories</a></td></tr>
+            <tr><td>Segments / joints</td><td>names, parent/child structure, associated markers, joints</td><td>—</td><td><a href="api-viconnexus.html#segment">Segments</a></td></tr>
+            <tr><td>Model outputs</td><td>components, quantity types, all frames, single frame</td><td>create, all frames, single frame</td><td><a href="api-viconnexus.html#modeloutput">Model outputs</a></td></tr>
+            <tr><td>Parameters</td><td>subject parameters, analysis parameters</td><td>modify and create</td><td><a href="api-viconnexus.html#param">Parameters</a></td></tr>
+            <tr><td>Events</td><td>query by context/type</td><td>create, clear all</td><td><a href="api-viconnexus.html#event">Events</a></td></tr>
+            <tr><td>Analog devices</td><td>device / output / channel metadata and samples</td><td>channel data</td><td><a href="api-viconnexus.html#device">Devices</a></td></tr>
+            <tr><td>Spline</td><td>1st/2nd derivative of the fit</td><td>submit scattered points</td><td><a href="api-viconnexus.html#spline">Spline</a></td></tr>
+            <tr><td>Trial control</td><td>—</td><td>open, save, close, run pipeline</td><td><a href="api-viconnexus.html#trialops">Trial operations</a></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="limits">Known limitations</h2>
+        <ul>
+          <li><strong>Windows x64 only.</strong> The SDK depends on pre-built binaries such as <code>ViconSDKClientCPP.dll</code> and <code>_NexusClient3.pyd</code>.</li>
+          <li><strong>Nexus must already be running.</strong> The SDK is a client with no data layer of its own; even <code>OpenTrial</code> is executed by the host application.</li>
+          <li><strong>Script context matters.</strong> Scripts running inside Nexus cannot call <code>OpenTrial</code> / <code>SaveTrial</code> / <code>CloseTrial</code> / <code>RunPipeline</code>.</li>
+          <li><strong>Quiet error handling.</strong> Most methods return <code>None</code> on failure and only print to <code>stderr</code>, so verify by reading back.</li>
+          <li><strong>Some utils methods are unfinished.</strong> See <a href="faq.html#known-issues">known issues</a>.</li>
+        </ul>
+
+        <h2 id="conventions">Conventions</h2>
+        <dl class="kv">
+          <dt><span class="tag ro">read</span></dt><dd>Reads data, never modifies the trial</dd>
+          <dt><span class="tag rw">write</span></dt><dd>Modifies trial data in Nexus memory (save to persist)</dd>
+          <dt><span class="tag host">host</span></dt><dd>Needs the host application; not callable from inside Nexus</dd>
+        </dl>
+        <p>
+          Types in the signatures come from the source docstrings and implementation.
+          <code>frame</code> always means "the frame number shown on the application time bar" and is
+          <strong>1-based</strong>; list indices are 0-based.
+        </p>
+
+        <div class="tip">
+          <b>Works offline</b>
+          This site also works over <code>file://</code> (just double-click <code>docs/index.html</code>).
+          It loads nothing from a CDN, and behaves the same when served by GitHub Pages.
+        </div>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+      <span><a href="faq.html">FAQ</a></span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

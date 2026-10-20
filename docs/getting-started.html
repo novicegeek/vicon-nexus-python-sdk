@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick start · Vicon Nexus Python SDK</title>
+<meta name="description" content="Install viconnexusapi / viconnexusutils, connect to Nexus, and write your first read/write script.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span>Quick start</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>Quick start</h1>
+        <p class="lede">
+          Three steps: install the packages → confirm Nexus is running → connect and read or write data.
+          Everything happens on a Windows command line; no compiler toolchain is needed.
+        </p>
+
+        <h2 id="requirements">Prerequisites</h2>
+        <table>
+          <thead><tr><th style="width:180px">Item</th><th>Requirement</th></tr></thead>
+          <tbody>
+            <tr><td>Operating system</td><td>Windows x64 (both the <code>.pyd</code> / <code>.dll</code> are 64-bit pre-built binaries)</td></tr>
+            <tr><td>Nexus</td><td>2.12 (the version these docs cover); it must be <strong>running</strong>, and loading a trial first is recommended</td></tr>
+            <tr><td>Python</td><td>2.7 or 3.x, and its bitness must match the <code>.pyd</code> (64-bit)</td></tr>
+            <tr><td>Optional dependencies</td><td><code>numpy</code>, <code>six</code> (needed only by <code>viconnexusutils</code>)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="warn">
+          <b>Version alignment</b>
+          The client DLL and the Nexus version have to match. Using the 2.12 <code>viconnexusapi</code> to connect
+          to a Nexus from another major version usually fails during <code>Connect</code> or returns
+          <code>Error()</code>. You can confirm the version at runtime with
+          <a href="api-viconnexus.html#GetServerInfo"><code>GetServerInfo()</code></a>.
+        </div>
+
+        <h2 id="install">Installation</h2>
+
+        <h3 id="install-bat">Option 1: run the official batch files</h3>
+        <p>Double-click them in the SDK root directory, or run them from a command line:</p>
+<pre><code>install_vicon_nexus_api.bat     :: install the core API (pip install .\viconnexusapi)
+install_vicon_nexus_utils.bat   :: install the optional utils package</code></pre>
+        <p>Each batch file is just a single <code>pip install</code> that installs the local directory into the site-packages of the current Python.</p>
+
+        <h3 id="install-pip">Option 2: install manually with pip</h3>
+<pre><code>:: core API
+pip install "C:\path\to\ViconNexus2.12_PythonSDK\viconnexusapi"
+
+:: optional: numpy wrapper layer
+pip install "C:\path\to\ViconNexus2.12_PythonSDK\viconnexusutils"</code></pre>
+        <p>Both packages provide a <code>setup.py</code>, so they can be installed straight from their source
+          directories. <code>viconnexusutils</code> declares dependencies on <code>six</code>,
+          <code>numpy</code> and <code>viconnexusapi</code>.</p>
+
+        <h3 id="install-syspath">Option 3: no install, just add the path</h3>
+        <p>If you do not want to touch the environment (for a script running inside Nexus, for example), simply add the package directory to <code>sys.path</code>:</p>
+<pre><code>import sys
+sys.path.insert(0, r'C:\path\to\ViconNexus2.12_PythonSDK\viconnexusapi')
+
+from viconnexusapi import ViconNexus
+vicon = ViconNexus.ViconNexus()</code></pre>
+
+        <div class="note">
+          <b>About "no extra software to install"</b>
+          The packages depend only on the Python standard library (plus numpy/six for the utils). There is no
+          C++ extension to compile: <code>pip install</code> only copies files and never downloads other
+          components from the network.
+        </div>
+
+        <h2 id="verify">Verifying the installation</h2>
+<pre><code>python -c "import viconnexusapi, sys; print(viconnexusapi.__file__); print(sys.version)"</code></pre>
+        <p>
+          If the package path is printed, the installation succeeded. Note that <code>viconnexusapi/__init__.py</code>
+          is an empty file, so what you actually import are the submodules:
+        </p>
+<pre><code>from viconnexusapi import ViconNexus, ViconUtils
+from viconnexusapi import NexusForcePlate, NexusEyeTracker</code></pre>
+
+        <h2 id="connect">Connecting and disconnecting</h2>
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()          # default host='localhost'
+# vicon = ViconNexus.ViconNexus('10.0.0.5')   # connect to Nexus on the given host
+
+if not vicon.IsConnected():
+    raise RuntimeError('Nexus is not connected')
+
+print(vicon.GetServerInfo())
+vicon.Disconnect()</code></pre>
+
+        <table>
+          <thead><tr><th style="width:190px">Scenario</th><th>Symptom / handling</th></tr></thead>
+          <tbody>
+            <tr><td>Nexus is not running</td><td>The constructor raises <code>IOError: Unable to connect to Nexus</code></td></tr>
+            <tr><td>Nexus closes after connecting</td><td><code>IsConnected()</code> turns <code>False</code> and later calls report errors to stderr</td></tr>
+            <tr><td>Network hiccup</td><td>Call <a href="api-viconnexus.html#Connect"><code>Connect()</code></a> to reconnect; there is no need to rebuild the object</td></tr>
+            <tr><td>Long batch jobs</td><td>Use <code>try/finally</code> to guarantee <code>Disconnect()</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="first-script">Your first script</h2>
+        <p>Read the trial summary and one marker trajectory, then compute a midpoint model output:</p>
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()
+try:
+    path, name = vicon.GetTrialName()
+    print('Trial:', name, 'in', path)
+
+    subjects = vicon.GetSubjectNames()
+    subject = subjects[0]
+
+    markers = vicon.GetMarkerNames(subject)
+    print('Markers:', markers)
+
+    x, y, z, e = vicon.GetTrajectory(subject, markers[0])
+    valid = [i for i, ok in enumerate(e) if ok]
+    print('frames with data:', len(valid), 'of', len(e))
+
+    # create a "modeled marker" and write the midpoint of the two markers into it
+    out_name = 'MyMidpoint'
+    vicon.CreateModeledMarker(subject, out_name)
+
+    ax, ay, az, ae = vicon.GetTrajectory(subject, 'RKNE')
+    bx, by, bz, be = vicon.GetTrajectory(subject, 'RANK')
+
+    data, exists = vicon.GetModelOutput(subject, out_name)
+    for i in range(vicon.GetFrameCount()):
+        if ae[i] and be[i]:
+            exists[i] = True
+            data[0][i] = (ax[i] + bx[i]) / 2.0
+            data[1][i] = (ay[i] + by[i]) / 2.0
+            data[2][i] = (az[i] + bz[i]) / 2.0
+        else:
+            exists[i] = False
+
+    vicon.SetModelOutput(subject, out_name, data, exists)
+finally:
+    vicon.Disconnect()</code></pre>
+
+        <div class="tip">
+          <b>Remember to save</b>
+          The <code>Set*</code> family only changes the trial in memory. To persist your writes you have to call
+          <a href="api-viconnexus.html#SaveTrial"><code>vicon.SaveTrial(30)</code></a> (which is not allowed from a script running inside Nexus).
+        </div>
+
+        <h2 id="data-model">Data model cheat sheet</h2>
+        <table>
+          <thead><tr><th style="width:230px">What you read</th><th>Return shape</th></tr></thead>
+          <tbody>
+            <tr><td>Marker trajectory (all frames)</td><td>four equal-length lists <code>x, y, z, e</code>; <code>e</code> is a bool</td></tr>
+            <tr><td>Marker trajectory (single frame)</td><td>four scalars <code>x, y, z, e</code></td></tr>
+            <tr><td>Model output (all frames)</td><td><code>components, e</code>; <code>components</code> is an <code>N×M</code> nested list (N components, M frames)</td></tr>
+            <tr><td>Model output (single frame)</td><td><code>components, e</code>; <code>components</code> is a list of length N</td></tr>
+            <tr><td>Device channels</td><td><code>channelData, ready, rate</code>; sample count = frames × samples per frame</td></tr>
+            <tr><td>Events</td><td>two equal-length lists <code>frames, offsets</code></td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          All missing data is marked with <code>e</code> (exists) instead of dropping the position. Some
+          <code>Set*</code> methods convert <code>NaN</code> to <code>exists=False</code> automatically before
+          writing; see <a href="api-viconnexus.html#SetTrajectory">SetTrajectory</a>.
+        </p>
+
+        <h2 id="contexts">Two runtime environments</h2>
+        <table>
+          <thead><tr><th style="width:180px">Environment</th><th>What you can do</th><th>Limitations</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>External Python process</td>
+              <td>the full API, including <code>OpenTrial</code> / <code>SaveTrial</code> / <code>CloseTrial</code> /
+                  <code>RunPipeline</code> (this is what batch automation relies on)</td>
+              <td>Nexus must be running and reachable</td>
+            </tr>
+            <tr>
+              <td>Script inside Nexus</td>
+              <td>data reads and writes, events, model outputs and so on</td>
+              <td>cannot open or save trials, cannot run pipelines; blocking operations may freeze the UI</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="next">Next steps</h2>
+        <div class="cards">
+          <a class="card" href="api-viconnexus.html"><div class="t">Complete API</div><div class="d">Signatures, parameters, return values and examples for all 69 methods.</div></a>
+          <a class="card" href="examples.html"><div class="t">Example scripts</div><div class="d">Gap filling, foot event detection, midpoints, consistency tests.</div></a>
+          <a class="card" href="faq.html"><div class="t">FAQ</div><div class="d">Connection failures, encoding problems, performance and known defects.</div></a>
+        </div>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

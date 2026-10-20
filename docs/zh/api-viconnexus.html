@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ViconNexus 类参考 · Vicon Nexus Python SDK</title>
+<meta name="description" content="viconnexusapi.ViconNexus.ViconNexus 全部 69 个方法的完整 API 参考。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span><a href="api-viconnexus.html">API 参考</a><span class="sep">/</span>ViconNexus</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>ViconNexus</h1>
+        <p class="lede">
+          <code>viconnexusapi.ViconNexus.ViconNexus</code> — SDK 的主入口类。
+          实例化即连接 Nexus，随后通过方法读写试次数据。
+        </p>
+
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()        # host 默认 'localhost'
+vicon.GenerateErrors = True            # 默认 True：失败时把原因打到 stderr</code></pre>
+
+        <div class="pill-row">
+          <span class="pill">69 个方法（含构造）</span>
+          <span class="pill">45 个只读</span>
+          <span class="pill">24 个写入 / 控制</span>
+        </div>
+
+        <h2 id="overview">方法分组</h2>
+        <table>
+          <thead><tr><th style="width:170px">分组</th><th>方法</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#connection">连接与会话</a></td><td><code>__init__</code> <code>Connect</code> <code>Disconnect</code> <code>IsConnected</code> <code>GetServerInfo</code></td></tr>
+            <tr><td><a href="#trial">试次与帧</a></td><td><code>GetFrameCount</code> <code>GetFrameRate</code> <code>GetTrialRange</code> <code>GetTrialRegionOfInterest</code> <code>SetTrialRegionOfInterest</code> <code>GetTrialName</code></td></tr>
+            <tr><td><a href="#subject">受试者</a></td><td><code>GetSubjectNames</code> <code>GetSubjectInfo</code> <code>SetSubjectActive</code></td></tr>
+            <tr><td><a href="#unlabeled">未标注轨迹</a></td><td><code>GetUnlabeledCount</code> <code>GetUnlabeled</code></td></tr>
+            <tr><td><a href="#trajectory">标记点与轨迹</a></td><td><code>GetMarkerNames</code> <code>HasTrajectory</code> <code>GetTrajectory</code> <code>SetTrajectory</code> <code>GetTrajectoryAtFrame</code> <code>SetTrajectoryAtFrame</code></td></tr>
+            <tr><td><a href="#segment">骨骼段与关节</a></td><td><code>GetSegmentNames</code> <code>GetRootSegment</code> <code>GetSegmentDetails</code> <code>GetJointNames</code> <code>GetJointDetails</code></td></tr>
+            <tr><td><a href="#modeloutput">模型输出</a></td><td><code>GetModelOutputNames</code> <code>GetModelOutputDetails</code> <code>GetModelOutput</code> <code>SetModelOutput</code> <code>GetModelOutputAtFrame</code> <code>SetModelOutputAtFrame</code> <code>CreateModelOutput</code> <code>CreateModeledMarker</code></td></tr>
+            <tr><td><a href="#param">受试者 / 分析参数</a></td><td><code>GetSubjectParamNames</code> <code>GetSubjectParamDetails</code> <code>GetSubjectParam</code> <code>SetSubjectParam</code> <code>CreateSubjectParam</code> <code>GetAnalysisParamNames</code> <code>GetAnalysisParamDetails</code> <code>GetAnalysisParam</code> <code>SetAnalysisParam</code> <code>CreateAnalysisParam</code></td></tr>
+            <tr><td><a href="#event">事件</a></td><td><code>GetEvents</code> <code>CreateAnEvent</code> <code>ClearAllEvents</code></td></tr>
+            <tr><td><a href="#device">模拟设备</a></td><td><code>GetDeviceIDs</code> <code>GetDeviceNames</code> <code>GetDeviceIDFromName</code> <code>GetDeviceDetails</code> <code>GetDeviceOutputIDFromName</code> <code>GetDeviceOutputDetails</code> <code>GetDeviceChannelIDFromName</code></td></tr>
+            <tr><td><a href="#channel">设备通道数据</a></td><td><code>GetDeviceChannel</code> <code>GetDeviceChannelAtFrame</code> <code>GetDeviceChannelForFrame</code> <code>GetDeviceChannelGlobal</code> <code>GetDeviceChannelGlobalAtFrame</code> <code>GetDeviceChannelGlobalForFrame</code> <code>SetDeviceChannel</code> <code>SetDeviceChannelAtFrame</code></td></tr>
+            <tr><td><a href="#spline">样条</a></td><td><code>SubmitSplineTrajectory</code> <code>GetSplineResults</code></td></tr>
+            <tr><td><a href="#trialops">试次操作</a></td><td><code>OpenTrial</code> <code>SaveTrial</code> <code>CloseTrial</code> <code>RunPipeline</code></td></tr>
+            <tr><td><a href="#errors">异常与开关</a></td><td><code>ViconNexusException</code> <code>GenerateErrors</code> <code>Client</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="connection">连接与会话</h2>
+
+        <article class="api-item" id="__init__">
+          <h3>__init__<span class="sig">(host='localhost')</span><span class="kind">控制</span></h3>
+          <p class="desc">构造函数。创建底层 <code>ViconNexusClient</code> 并立即尝试连接宿主应用。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>host</code></td><td>str</td><td>Nexus 所在主机名或 IP，默认本机。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> 实例。<strong>异常</strong> 连接失败抛 <code>IOError("Unable to connect to Nexus")</code>。<strong>副作用</strong> 设置 <code>self.GenerateErrors = True</code>。</p>
+<pre><code>vicon = ViconNexus.ViconNexus()
+# 连不上时：
+# IOError: Unable to connect to Nexus</code></pre>
+        </article>
+
+        <article class="api-item" id="Connect">
+          <h3>Connect<span class="sig">(host='localhost')</span><span class="kind">控制</span></h3>
+          <p class="desc">若当前未连接则重新连接；已连接时什么也不做。用于网络闪断后的恢复，无需重建对象。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>host</code></td><td>str</td><td>要连接的主机，仅在未连接时生效。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>None</code>。<strong>异常</strong> 重连失败抛 <code>IOError</code>。</p>
+<pre><code>if not vicon.IsConnected():
+    vicon.Connect()</code></pre>
+        </article>
+
+        <article class="api-item" id="Disconnect">
+          <h3>Disconnect<span class="sig">()</span><span class="kind">控制</span></h3>
+          <p class="desc">断开与宿主应用的连接。已断开时是空操作。</p>
+<pre><code>vicon.Disconnect()</code></pre>
+        </article>
+
+        <article class="api-item" id="IsConnected">
+          <h3>IsConnected<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">查询当前是否与宿主保持连接。</p>
+          <p class="ret"><strong>返回</strong> <code>bool</code>。</p>
+<pre><code>vicon.IsConnected()   # True / False</code></pre>
+        </article>
+
+        <article class="api-item" id="GetServerInfo">
+          <h3>GetServerInfo<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">返回所连接服务器（宿主）的版本信息，可用于校验 SDK 与 Nexus 的版本是否匹配。</p>
+          <p class="ret"><strong>返回</strong> <code>(program, major, minor, point, release_type)</code> ——
+            <code>program</code> 为程序名（str），<code>major</code>/<code>minor</code>/<code>point</code> 为 int 版本号，
+            <code>release_type</code> 为发行类型字符串（str）。</p>
+<pre><code>program, major, minor, point, rel = vicon.GetServerInfo()
+if (major, minor) != (2, 12):
+    print('版本不匹配:', program, major, minor, point, rel)</code></pre>
+        </article>
+
+        <h2 id="trial">试次与帧</h2>
+
+        <article class="api-item" id="GetFrameCount">
+          <h3>GetFrameCount<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">已加载试次的总帧数。</p>
+          <p class="ret"><strong>返回</strong> <code>int</code>。</p>
+<pre><code>n = vicon.GetFrameCount()</code></pre>
+        </article>
+
+        <article class="api-item" id="GetFrameRate">
+          <h3>GetFrameRate<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">试次的基础（光学）采样率。</p>
+          <p class="ret"><strong>返回</strong> <code>float</code>，单位 Hz。</p>
+<pre><code>rate = vicon.GetFrameRate()      # 例如 100.0</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialRange">
+          <h3>GetTrialRange<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">试次的可更新帧范围（可以安全写入的首末帧）。批量写入前用它限制循环区间。</p>
+          <p class="ret"><strong>返回</strong> <code>(start_frame, end_frame)</code> —— 两个 <code>int</code>，帧号从 1 开始。</p>
+<pre><code>start, end = vicon.GetTrialRange()
+for frame in range(start, end + 1):
+    pass</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialRegionOfInterest">
+          <h3>GetTrialRegionOfInterest<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">用户在 Nexus 中设置的感兴趣区间（ROI）首末帧。</p>
+          <p class="ret"><strong>返回</strong> <code>(start_frame, end_frame)</code> —— 两个 <code>int</code>。</p>
+        </article>
+
+        <article class="api-item" id="SetTrialRegionOfInterest">
+          <h3>SetTrialRegionOfInterest<span class="sig">(startFrame, EndFrame)</span><span class="kind">写</span></h3>
+          <p class="desc">设置用户 ROI 的首末帧。注意第二个形参在源码中是大写开头的 <code>EndFrame</code>，用关键字传参时必须照抄大小写。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>startFrame</code></td><td>int</td><td>区间起始帧（含），从 1 开始。</td></tr>
+              <tr><td><code>EndFrame</code></td><td>int</td><td>区间结束帧（含）。</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.SetTrialRegionOfInterest(10, 250)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialName">
+          <h3>GetTrialName<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">当前试次的名称与所在目录。</p>
+          <p class="ret"><strong>返回</strong> <code>(path, name)</code> —— <code>path</code> 是磁盘目录（不含文件名），<code>name</code> 是试次名。</p>
+<pre><code>path, name = vicon.GetTrialName()
+out_file = path + '\\' + name + '.MyOutput.csv'</code></pre>
+        </article>
+        <h2 id="subject">受试者</h2>
+
+        <article class="api-item" id="GetSubjectNames">
+          <h3>GetSubjectNames<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">返回当前已加载的全部受试者名称。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>，可能为空列表（试次中无受试者）。</p>
+<pre><code>for subject in vicon.GetSubjectNames():
+    print(subject)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSubjectInfo">
+          <h3>GetSubjectInfo<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">一次性拿到受试者的名称、所用模板（model template）与激活状态。</p>
+          <p class="ret"><strong>返回</strong> <code>(names, templates, active)</code> —— 三个等长列表：
+            <code>names</code>/<code>templates</code> 为 <code>list[str]</code>，<code>active</code> 为 <code>list[bool]</code>。</p>
+<pre><code>for name, tpl, is_active in zip(*vicon.GetSubjectInfo()):
+    print('{0} / 模板 {1} / 激活 {2}'.format(name, tpl, is_active))</code></pre>
+        </article>
+
+        <article class="api-item" id="SetSubjectActive">
+          <h3>SetSubjectActive<span class="sig">(subjectName, activeState)</span><span class="kind">写</span></h3>
+          <p class="desc">按名称设置受试者的激活状态；<code>'Exclusive'</code> 表示只激活该受试者、关闭其余全部。</p>
+          <table>
+            <thead><tr><th style="width:120px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subjectName</code></td><td>str</td><td>已存在的受试者名称。</td></tr>
+              <tr><td><code>activeState</code></td><td>bool / int / str</td><td><code>True/False</code>、<code>1/0</code>，或字符串 <code>'1'</code>/<code>'0'</code>/<code>'Exclusive'</code>。其它类型抛 <code>TypeError</code>。</td></tr>
+            </tbody>
+          </table>
+<pre><code>subjects = vicon.GetSubjectNames()
+for s in subjects:
+    vicon.SetSubjectActive(s, True)         # 全部激活
+vicon.SetSubjectActive(subjects[0], 'Exclusive')   # 只留第一个</code></pre>
+        </article>
+
+        <h2 id="unlabeled">未标注轨迹</h2>
+
+        <p>
+          未标注（unlabeled）轨迹是重建后尚未指派给受试者标记点的点簇。索引与顺序由 Nexus 决定，
+          不同试次之间不稳定，因此不要在两次加载之间缓存索引。
+        </p>
+
+        <article class="api-item" id="GetUnlabeledCount">
+          <h3>GetUnlabeledCount<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">未标注轨迹数量。</p>
+          <p class="ret"><strong>返回</strong> <code>int</code>。</p>
+<pre><code>n = vicon.GetUnlabeledCount()</code></pre>
+        </article>
+
+        <article class="api-item" id="GetUnlabeled">
+          <h3>GetUnlabeled<span class="sig">(index)</span><span class="kind">读</span></h3>
+          <p class="desc">按索引读取一条未标注轨迹的全部帧。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>index</code></td><td>int</td><td>轨迹索引，取值 <code>0 … GetUnlabeledCount()-1</code>。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(x, y, z, e)</code> —— 三个 <code>list[float]</code>（mm）与一个 <code>list[bool]</code>。</p>
+<pre><code>x, y, z, e = vicon.GetUnlabeled(0)
+if e[49]:
+    print('第 50 帧:', x[49], y[49], z[49])</code></pre>
+        </article>
+
+        <h2 id="trajectory">标记点与轨迹</h2>
+
+        <p>
+          轨迹数据统一是“四条等长列表”：<code>x / y / z</code> 是坐标（单位 mm），
+          <code>e</code> 是该帧是否存在有效数据。列表长度等于 <code>GetFrameCount()</code>。
+        </p>
+
+        <article class="api-item" id="GetMarkerNames">
+          <h3>GetMarkerNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者身上定义的标记点名称列表（含未采集到数据的标记点）。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>subject</code></td><td>str</td><td>已存在的受试者名称。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+<pre><code>markers = vicon.GetMarkerNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="HasTrajectory">
+          <h3>HasTrajectory<span class="sig">(subject, marker)</span><span class="kind">读</span></h3>
+          <p class="desc">判断该标记点是否关联了轨迹数据（标记点可以存在但完全没有轨迹）。</p>
+          <p class="ret"><strong>返回</strong> <code>bool</code>。</p>
+<pre><code>if vicon.HasTrajectory('Colin', 'C7'):
+    print(vicon.GetTrajectory('Colin', 'C7')[0][0])</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrajectory">
+          <h3>GetTrajectory<span class="sig">(subject, marker)</span><span class="kind">读</span></h3>
+          <p class="desc">读取指定标记点全部帧的轨迹数据。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>受试者名称。</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>标记点名称。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(x, y, z, e)</code> —— <code>list[float]</code> ×3 与 <code>list[bool]</code>，长度 = 帧数。</p>
+<pre><code>x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+exists_count = sum(e)
+print('有效帧:', exists_count, '/', len(e))</code></pre>
+        </article>
+
+        <article class="api-item" id="SetTrajectory">
+          <h3>SetTrajectory<span class="sig">(subject, marker, x, y, z, e)</span><span class="kind">写</span></h3>
+          <p class="desc">写入该标记点全部帧的轨迹数据。</p>
+          <p class="desc">
+            若某一帧的 <code>x/y/z</code> 任一为 <code>NaN</code>，SDK 会把该帧的坐标清零并把 <code>e[i]</code>
+            改成 <code>False</code> 再写入（即在传输层自动“补洞”），因此传入的列表会被就地修改。
+          </p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:180px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>受试者名称。</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>标记点名称。</td></tr>
+              <tr><td><code>x</code>, <code>y</code>, <code>z</code></td><td>list[float]</td><td>坐标（mm），长度必须等于帧数。</td></tr>
+              <tr><td><code>e</code></td><td>list[bool]</td><td>逐帧存在性；<code>False</code> 表示该帧无数据（缺口）。</td></tr>
+            </tbody>
+          </table>
+<pre><code>frames = vicon.GetFrameCount()
+vicon.SetTrajectory('Colin', 'C7', [0.0] * frames, [0.0] * frames,
+                    [0.0] * frames, [True] * frames)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrajectoryAtFrame">
+          <h3>GetTrajectoryAtFrame<span class="sig">(subject, marker, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">读取单帧轨迹数据（逐帧循环时比读整条更省内存，但往返次数更多）。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>受试者名称。</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>标记点名称。</td></tr>
+              <tr><td><code>frame</code></td><td>int</td><td>时间条上显示的帧号，从 1 开始。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(x, y, z, e)</code> —— 三个 <code>float</code> 与一个 <code>bool</code>。</p>
+<pre><code>x, y, z, e = vicon.GetTrajectoryAtFrame('Colin', 'C7', 50)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetTrajectoryAtFrame">
+          <h3>SetTrajectoryAtFrame<span class="sig">(subject, marker, frame, x, y, z, e)</span><span class="kind">写</span></h3>
+          <p class="desc">写入单帧轨迹。任一坐标为 <code>NaN</code> 时自动置 <code>e=False</code> 且坐标清零。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>frame</code></td><td>int</td><td>帧号，从 1 开始。</td></tr>
+              <tr><td><code>x</code>, <code>y</code>, <code>z</code></td><td>float</td><td>坐标（mm）。</td></tr>
+              <tr><td><code>e</code></td><td>bool</td><td>该帧是否存在数据。</td></tr>
+            </tbody>
+          </table>
+<pre><code># 在第 50 帧制造一个缺口
+vicon.SetTrajectoryAtFrame('Colin', 'C7', 50, 0.0, 0.0, 0.0, False)
+
+# 逐帧填充时，注意性能：大批量请改用 SetTrajectory
+for frame in range(start, end + 1):
+    vicon.SetTrajectoryAtFrame('Colin', 'C7', frame, x, y, z, True)</code></pre>
+        </article>
+        <h2 id="segment">骨骼段与关节</h2>
+
+        <p>
+          骨骼段（segment）构成受试者的层级骨架，根段的父节点名为 <code>'World'</code>。
+          关节（joint）连接两个相邻段。这一段 API 只读，写入骨骼请通过
+          <a href="#modeloutput">模型输出</a>（例如 Plug-in Gait Bones 分组）。
+        </p>
+
+        <article class="api-item" id="GetSegmentNames">
+          <h3>GetSegmentNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者的骨骼段名称列表。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+<pre><code>segments = vicon.GetSegmentNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetRootSegment">
+          <h3>GetRootSegment<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">返回根骨骼段名称（通常是骨盆）。</p>
+          <p class="ret"><strong>返回</strong> <code>str</code>。</p>
+<pre><code>root = vicon.GetRootSegment('Colin')
+parent, children, markers = vicon.GetSegmentDetails('Colin', root)
+print('根段父节点:', parent)     # 'World'</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSegmentDetails">
+          <h3>GetSegmentDetails<span class="sig">(subject, segment)</span><span class="kind">读</span></h3>
+          <p class="desc">骨骼段的层级与关联信息。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>受试者名称。</td></tr>
+              <tr><td><code>segment</code></td><td>str</td><td>该受试者已存在的骨骼段名称。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(parent, children, markers)</code> ——
+            <code>parent</code> 为父段名（根段为 <code>'World'</code>），
+            <code>children</code> 为 <code>list[str]</code> 子段名，
+            <code>markers</code> 为 <code>list[str]</code> 该段关联的标记点名。</p>
+<pre><code>parent, children, markers = vicon.GetSegmentDetails('Colin', 'LHip')
+for child in children:
+    print(child)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetJointNames">
+          <h3>GetJointNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者的关节名称列表。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+        </article>
+
+        <article class="api-item" id="GetJointDetails">
+          <h3>GetJointDetails<span class="sig">(subject, joint)</span><span class="kind">读</span></h3>
+          <p class="desc">关节两侧的骨骼段名称。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>受试者名称。</td></tr>
+              <tr><td><code>joint</code></td><td>str</td><td>该受试者已存在的关节名称。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(parent, child)</code> —— 两个 <code>str</code>。</p>
+<pre><code>joints = vicon.GetJointNames('Colin')
+parent, child = vicon.GetJointDetails('Colin', joints[0])
+print('{0}: {1} - {2}'.format(joints[0], parent, child))</code></pre>
+        </article>
+
+        <h2 id="modeloutput">模型输出</h2>
+
+        <p>
+          模型输出（model output）是 Nexus 里承载“计算结果”的通用容器：角度、力、力矩、功率、
+          Plug-in Gait 骨骼、以及建模标记点都是模型输出。每个输出有一个分组名
+          （如 <code>Angles</code>、<code>Forces</code>、<code>Plug-in Gait Bones</code>、<code>Modeled Markers</code>），
+          以及若干“分量”，每个分量再带一个量纲。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:240px">合法量纲（Quantity Type）</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>Length</code> <code>Mass</code> <code>Angle</code> <code>Acceleration</code>
+                  <code>Angular Acceleration</code> <code>Angular Velocity</code> <code>Frequency</code>
+                  <code>Force</code> <code>ForceNormalized</code> <code>Torque</code> <code>TorqueNormalized</code>
+                  <code>Power</code> <code>PowerNormalized</code> <code>Pressure</code>
+                  <code>Electric Potential</code> <code>Velocity</code></td>
+              <td>大小写敏感，传入其它字符串会失败（错误打到 stderr）</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="GetModelOutputNames">
+          <h3>GetModelOutputNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者全部模型输出的名称。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+<pre><code>outputs = vicon.GetModelOutputNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutputDetails">
+          <h3>GetModelOutputDetails<span class="sig">(subject, modelOutputName)</span><span class="kind">读</span></h3>
+          <p class="desc">模型输出的分组、分量名与各分量量纲，可用于“照抄”创建一个结构相同的新输出。</p>
+          <p class="ret"><strong>返回</strong> <code>(group, components, types)</code> ——
+            <code>group</code> 为分组名（str），<code>components</code> 与 <code>types</code> 为等长的 <code>list[str]</code>。</p>
+<pre><code>group, comps, types = vicon.GetModelOutputDetails('Colin', 'LeftHipAngle')
+vicon.CreateModelOutput('Colin', 'MyCopy', group, comps, types)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutput">
+          <h3>GetModelOutput<span class="sig">(subject, modelOutputName)</span><span class="kind">读</span></h3>
+          <p class="desc">读取模型输出全部帧的数据。</p>
+          <p class="ret"><strong>返回</strong> <code>(components, e)</code> ——
+            <code>components</code> 是 <code>N×M</code> 嵌套列表（N = 分量数，M = 帧数），
+            <code>e</code> 是长度 M 的 <code>list[bool]</code> 逐帧存在性。
+            缺失帧的数值不保证有意义，请先用 <code>e</code> 过滤。</p>
+<pre><code>data, exists = vicon.GetModelOutput('Colin', 'LeftHipAngle')
+n_components = len(data)        # 例如 3（X/Y/Z）
+n_frames = len(data[0])         # 等于 GetFrameCount()
+# 第 2 个分量在第 50 帧的值
+print(data[1][49], exists[49])</code></pre>
+        </article>
+
+        <article class="api-item" id="SetModelOutput">
+          <h3>SetModelOutput<span class="sig">(subject, modelOutputName, components, e)</span><span class="kind">写</span></h3>
+          <p class="desc">写入模型输出全部帧的数据。</p>
+          <p class="desc">
+            内部会把 <code>NaN</code> 替换为 0，并把对应帧的 <code>exists</code> 置为 <code>False</code>；
+            同时也做了 <code>numpy.bool_</code> → <code>bool</code> 的兼容转换，因此传 numpy 数组也安全。
+          </p>
+          <table>
+            <thead><tr><th style="width:120px">参数</th><th style="width:170px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>components</code></td><td>list[list[float]]</td><td><code>N×M</code> 矩阵，行是分量、列是帧。</td></tr>
+              <tr><td><code>e</code></td><td>list[bool]</td><td>长度 M 的逐帧存在性。</td></tr>
+            </tbody>
+          </table>
+<pre><code>data, exists = vicon.GetModelOutput('Colin', 'LeftHipAngle')
+vicon.SetModelOutput('Colin', 'MyCopy', data, exists)
+
+# 全部置零
+frames = vicon.GetFrameCount()
+vicon.SetModelOutput('Colin', 'MyCopy', [[0.0] * frames for _ in range(3)],
+                     [True] * frames)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutputAtFrame">
+          <h3>GetModelOutputAtFrame<span class="sig">(subject, modelOutputName, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">读取单帧的模型输出分量值。</p>
+          <p class="ret"><strong>返回</strong> <code>(components, e)</code> ——
+            <code>components</code> 为长度 N 的 <code>list[float]</code>，<code>e</code> 为 <code>bool</code>。</p>
+<pre><code>comps, ok = vicon.GetModelOutputAtFrame('Colin', 'LeftHipAngle', 50)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetModelOutputAtFrame">
+          <h3>SetModelOutputAtFrame<span class="sig">(subject, modelOutputName, frame, components, e)</span><span class="kind">写</span></h3>
+          <p class="desc">写入单帧模型输出。任一分量为 <code>NaN</code> 时整帧置为不存在并把分量清零。</p>
+          <table>
+            <thead><tr><th style="width:120px">参数</th><th style="width:170px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>frame</code></td><td>int</td><td>帧号，从 1 开始。</td></tr>
+              <tr><td><code>components</code></td><td>list[float]</td><td>长度必须等于该输出的分量数。</td></tr>
+              <tr><td><code>e</code></td><td>bool</td><td>该帧是否存在数据。</td></tr>
+            </tbody>
+          </table>
+<pre><code>comps, ok = vicon.GetModelOutputAtFrame('Colin', 'LeftHipAngle', 50)
+comps = [c + 100.0 for c in comps]
+vicon.SetModelOutputAtFrame('Colin', 'LeftHipAngle', 50, comps, True)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateModelOutput">
+          <h3>CreateModelOutput<span class="sig">(subject, modelOutputName, groupName, componentNames, QuantityTypes)</span><span class="kind">写</span></h3>
+          <p class="desc">新建一个模型输出（此时还没有数据），之后用 <code>SetModelOutput</code> /
+            <code>SetModelOutputAtFrame</code> 填数据。名称在受试者内必须唯一。</p>
+          <table>
+            <thead><tr><th style="width:150px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>groupName</code></td><td>str</td><td>分组名，决定在 Nexus 树中的归类，可自定义。</td></tr>
+              <tr><td><code>componentNames</code></td><td>list[str]</td><td>分量名，长度即分量数。</td></tr>
+              <tr><td><code>QuantityTypes</code></td><td>list[str]</td><td>每个分量的量纲，取值见上表，长度需与分量数一致。</td></tr>
+            </tbody>
+          </table>
+<pre><code>names = ['RX', 'RY', 'RZ', 'TX', 'TY', 'TZ', 'SX', 'SY', 'SZ']
+types = ['Angle', 'Angle', 'Angle',
+         'Length', 'Length', 'Length',
+         'Length', 'Length', 'Length']
+vicon.CreateModelOutput('Colin', 'HED', 'Plug-in Gait Bones', names, types)</code></pre>
+          <div class="note">
+            <b>完整 Gait 输出</b>
+            需要一次性创建 Plug-in Gait 全套输出时，直接用
+            <a href="api-viconutils.html#CreateViconGaitModelOutputs"><code>ViconUtils.CreateViconGaitModelOutputs</code></a>。
+          </div>
+        </article>
+
+        <article class="api-item" id="CreateModeledMarker">
+          <h3>CreateModeledMarker<span class="sig">(subject, modelOutputName)</span><span class="kind">写</span></h3>
+          <p class="desc">新建一个“建模标记点”：本质是分组为 <code>Modeled Markers</code>、
+            分量为 <code>X/Y/Z</code>、量纲为 <code>Length</code> 的模型输出。
+            它既能在工作区立体显示，也能像点一样被读取，常用于中点、虚拟标记点、几何派生点。</p>
+          <p class="ret"><strong>返回</strong> <code>None</code>。之后用 <code>GetModelOutput</code> 拿 <code>N×M</code> 数据写入。</p>
+<pre><code>vicon.CreateModeledMarker('Colin', 'MyMidpoint')
+
+ax, ay, az, ae = vicon.GetTrajectory('Colin', 'RKNE')
+bx, by, bz, be = vicon.GetTrajectory('Colin', 'RANK')
+
+data, exists = vicon.GetModelOutput('Colin', 'MyMidpoint')
+for i in range(vicon.GetFrameCount()):
+    if ae[i] and be[i]:
+        exists[i] = True
+        data[0][i] = (ax[i] + bx[i]) / 2.0
+        data[1][i] = (ay[i] + by[i]) / 2.0
+        data[2][i] = (az[i] + bz[i]) / 2.0
+    else:
+        exists[i] = False
+vicon.SetModelOutput('Colin', 'MyMidpoint', data, exists)</code></pre>
+        </article>
+        <h2 id="param">受试者参数与分析参数</h2>
+
+        <p>
+          Nexus 里有两类“标量参数”，都挂在受试者上：
+        </p>
+        <ul>
+          <li><strong>受试者参数</strong>（subject parameter）：静态量，如身高、体重、腿长。有单位、默认值、“是否必填”属性。</li>
+          <li><strong>分析参数</strong>（analysis parameter）：分析过程中产生的量，可随时读写。</li>
+        </ul>
+
+        <h3 id="subject-params">受试者参数</h3>
+
+        <article class="api-item" id="GetSubjectParamNames">
+          <h3>GetSubjectParamNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者全部静态参数的名称。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+<pre><code>params = vicon.GetSubjectParamNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSubjectParamDetails">
+          <h3>GetSubjectParamDetails<span class="sig">(subject, param)</span><span class="kind">读</span></h3>
+          <p class="desc">一次性取参数的当前值、单位、默认值、是否必填、是否有值。</p>
+          <p class="ret"><strong>返回 5 元组</strong> <code>(value, unit, default, required, hasvalue)</code> ——
+            <code>value</code>/<code>default</code> 为 <code>float</code>，<code>unit</code> 为 <code>str</code>，
+            <code>required</code>/<code>hasvalue</code> 为 <code>bool</code>。</p>
+<pre><code>value, unit, default, required, hasvalue = \
+    vicon.GetSubjectParamDetails('Colin', 'Height')
+print('{0} [{1}] 默认 {2}  必填={3} 有值={4}'.format(
+    value, unit, default, required, hasvalue))</code></pre>
+          <div class="warn">
+            <b>文档字符串有误</b>
+            源码 <code>GetSubjectParamDetails</code> 的 docstring 示例只解包了 4 个变量，
+            实际返回 <strong>5 个</strong>。以上面代码为准。
+          </div>
+        </article>
+
+        <article class="api-item" id="GetSubjectParam">
+          <h3>GetSubjectParam<span class="sig">(subject, param)</span><span class="kind">读</span></h3>
+          <p class="desc">只取参数值与“是否有值”标志。</p>
+          <p class="ret"><strong>返回</strong> <code>(value, hasvalue)</code> —— <code>float</code> 与 <code>bool</code>。</p>
+<pre><code>value, hasvalue = vicon.GetSubjectParam('Colin', 'Height')</code></pre>
+        </article>
+
+        <article class="api-item" id="SetSubjectParam">
+          <h3>SetSubjectParam<span class="sig">(subject, param, value, bForce=False)</span><span class="kind">写</span></h3>
+          <p class="desc">写入参数值。<code>bForce=True</code> 时强制写入（用于覆盖必填参数等受限情形）。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:120px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>value</code></td><td>float</td><td>新值。</td></tr>
+              <tr><td><code>bForce</code></td><td>bool</td><td>是否强制写入，默认 <code>False</code>。</td></tr>
+            </tbody>
+          </table>
+<pre><code>value, _ = vicon.GetSubjectParam('Colin', 'Height')
+vicon.SetSubjectParam('Colin', 'Height', value * 1.01, True)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateSubjectParam">
+          <h3>CreateSubjectParam<span class="sig">(subject, param, value, unit, default, required)</span><span class="kind">写</span></h3>
+          <p class="desc">新建静态参数，名称在受试者内必须唯一。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:120px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>value</code></td><td>float</td><td>初始值。</td></tr>
+              <tr><td><code>unit</code></td><td>str</td><td>单位。<strong>仅支持</strong> <code>'none'</code>、<code>'mm'</code>、<code>'deg'</code>、<code>'kg'</code>、<code>'s'</code>。</td></tr>
+              <tr><td><code>default</code></td><td>float</td><td>默认值。</td></tr>
+              <tr><td><code>required</code></td><td>bool</td><td>是否为必填参数。</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.CreateSubjectParam('Colin', 'MyParam', 1.23, 'mm', 0.0, False)</code></pre>
+        </article>
+
+        <h3 id="analysis-params">分析参数</h3>
+
+        <article class="api-item" id="GetAnalysisParamNames">
+          <h3>GetAnalysisParamNames<span class="sig">(subject)</span><span class="kind">读</span></h3>
+          <p class="desc">受试者全部分析参数的名称。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+<pre><code>params = vicon.GetAnalysisParamNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetAnalysisParamDetails">
+          <h3>GetAnalysisParamDetails<span class="sig">(subject, param)</span><span class="kind">读</span></h3>
+          <p class="desc">参数的当前值、单位与“是否有值”标志。</p>
+          <p class="ret"><strong>返回 3 元组</strong> <code>(value, unit, hasvalue)</code> ——
+            <code>float</code>、<code>str</code>、<code>bool</code>。</p>
+<pre><code>value, unit, hasvalue = vicon.GetAnalysisParamDetails('Colin', 'MyParam')</code></pre>
+          <div class="warn">
+            <b>文档字符串有误</b>
+            源码示例写的是 <code>value, unit, default, required = ...</code>（4 个），
+            实际只返回 <strong>3 个</strong>。
+          </div>
+        </article>
+
+        <article class="api-item" id="GetAnalysisParam">
+          <h3>GetAnalysisParam<span class="sig">(subject, param)</span><span class="kind">读</span></h3>
+          <p class="desc">只取参数值与标志。</p>
+          <p class="ret"><strong>返回</strong> <code>(value, hasvalue)</code>。</p>
+<pre><code>value, hasvalue = vicon.GetAnalysisParam('Colin', 'MyParam')</code></pre>
+        </article>
+
+        <article class="api-item" id="SetAnalysisParam">
+          <h3>SetAnalysisParam<span class="sig">(subject, param, value)</span><span class="kind">写</span></h3>
+          <p class="desc">写入分析参数值。</p>
+<pre><code>value, _ = vicon.GetAnalysisParam('Colin', 'MyParam')
+vicon.SetAnalysisParam('Colin', 'MyParam', value * -1)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateAnalysisParam">
+          <h3>CreateAnalysisParam<span class="sig">(subject, param, value, unit)</span><span class="kind">写</span></h3>
+          <p class="desc">新建分析参数，名称在受试者内必须唯一。</p>
+<pre><code>vicon.CreateAnalysisParam('Colin', 'MyParam', 1.23, 'mm')</code></pre>
+        </article>
+
+        <h2 id="event">事件</h2>
+
+        <p>
+          事件是“帧号 + 帧内偏移”的标注，例如足跟着地/离地。它由三元组定位：
+          受试者 + 上下文（context）+ 事件类型（event）。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:130px">字段</th><th>合法取值（大小写敏感）</th></tr></thead>
+          <tbody>
+            <tr><td>context</td><td><code>Left</code>、<code>Right</code>、<code>General</code></td></tr>
+            <tr><td>event</td><td><code>Foot Strike</code>、<code>Foot Off</code>、<code>General</code></td></tr>
+            <tr><td>offset</td><td>帧内偏移（秒），范围 <code>0.0 … 1/FrameRate</code></td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="GetEvents">
+          <h3>GetEvents<span class="sig">(subject, context, event)</span><span class="kind">读</span></h3>
+          <p class="desc">查询匹配指定受试者、上下文、事件类型的全部事件。</p>
+          <p class="ret"><strong>返回</strong> <code>(frames, offsets)</code> ——
+            <code>list[int]</code> 与 <code>list[float]</code>，等长；无匹配时是两个空列表。</p>
+<pre><code>frames, offsets = vicon.GetEvents('Colin', 'Left', 'Foot Strike')
+for f, off in zip(frames, offsets):
+    print('帧 {0} + {1:.4f}s'.format(f, off))</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateAnEvent">
+          <h3>CreateAnEvent<span class="sig">(subject, context, event, frame, offset)</span><span class="kind">写</span></h3>
+          <p class="desc">在 <code>frame + offset</code> 处创建一个事件。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:120px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>context</code></td><td>str</td><td><code>Left</code> / <code>Right</code> / <code>General</code>。</td></tr>
+              <tr><td><code>event</code></td><td>str</td><td><code>Foot Strike</code> / <code>Foot Off</code> / <code>General</code>。</td></tr>
+              <tr><td><code>frame</code></td><td>int</td><td>帧号，从 1 开始。</td></tr>
+              <tr><td><code>offset</code></td><td>float</td><td>帧内偏移秒数，通常 <code>&lt; 1/FrameRate</code>。</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.ClearAllEvents()
+vicon.CreateAnEvent('Colin', 'Left', 'Foot Strike', 137, 0.0)
+vicon.CreateAnEvent('Colin', 'Left', 'Foot Off', 190, 0.006)</code></pre>
+          <div class="note">
+            <b>参数顺序坑</b>
+            源码 docstring 的示例把 context 和 event 写反了
+            （<code>vicon.CreateAnEvent('Patricia', 'Foot Strike', 'Left', ...)</code>）。
+            正确顺序是 <strong>subject, context, event</strong>，见上面的代码。
+          </div>
+        </article>
+
+        <article class="api-item" id="ClearAllEvents">
+          <h3>ClearAllEvents<span class="sig">()</span><span class="kind">写</span></h3>
+          <p class="desc">删除当前试次中的全部事件（所有受试者、所有上下文）。不可撤销，且不影响已保存到磁盘的旧文件。</p>
+<pre><code>vicon.ClearAllEvents()</code></pre>
+        </article>
+        <h2 id="device">模拟设备</h2>
+
+        <p>
+          测力台、眼动仪、模拟采集卡在 SDK 里统称 <strong>device</strong>。层级是三层：
+        </p>
+<pre><code>DeviceID  ──▶  DeviceOutputID  ──▶  ChannelID
+（一块测力台）    （Force / CoP / Moment）   （Fx / Fy / Fz …）</code></pre>
+        <p>
+          通信一律用 ID，名称只是可选的便利标签，且<strong>大小写敏感</strong>。
+          设备采样率可以与试次帧率不同：若设备更快，一帧会对应多个采样，采样顺序为
+          <code>frame1[s1], frame1[s2], … frameN[sN]</code>。
+        </p>
+
+        <article class="api-item" id="GetDeviceIDs">
+          <h3>GetDeviceIDs<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">试次中全部模拟设备的 ID 列表。</p>
+          <p class="ret"><strong>返回</strong> <code>list[int]</code>（无符号整数）。</p>
+<pre><code>for device_id in vicon.GetDeviceIDs():
+    print(device_id, vicon.GetDeviceDetails(device_id)[:3])</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceNames">
+          <h3>GetDeviceNames<span class="sig">()</span><span class="kind">读</span></h3>
+          <p class="desc">已命名设备的名称列表（未命名的设备不在其中）。</p>
+          <p class="ret"><strong>返回</strong> <code>list[str]</code>。</p>
+        </article>
+
+        <article class="api-item" id="GetDeviceIDFromName">
+          <h3>GetDeviceIDFromName<span class="sig">(name)</span><span class="kind">读</span></h3>
+          <p class="desc">按设备名反查设备 ID。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>name</code></td><td>str</td><td>已命名设备的名称，大小写敏感。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> 设备 ID（整数）。名称不存在时返回 0/无效值，不会抛异常。</p>
+<pre><code>plate_id = vicon.GetDeviceIDFromName('MyForcePlate')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceDetails">
+          <h3>GetDeviceDetails<span class="sig">(deviceID)</span><span class="kind">读</span></h3>
+          <p class="desc">设备级信息，并对测力台/眼动仪附带几何与位姿数据。</p>
+          <p class="ret"><strong>返回 6 元组</strong>
+            <code>(name, device_type, rate, deviceOutputIDs, forceplate, eyetracker)</code>：</p>
+          <table>
+            <thead><tr><th style="width:150px">元素</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>name</code></td><td>str</td><td>设备名，可能为空串。</td></tr>
+              <tr><td><code>device_type</code></td><td>str</td><td><code>'ForcePlate'</code> / <code>'EyeTracker'</code> / <code>'Other'</code>。</td></tr>
+              <tr><td><code>rate</code></td><td>float</td><td>设备采样率（Hz）。</td></tr>
+              <tr><td><code>deviceOutputIDs</code></td><td>list[int]</td><td>该设备的输出 ID 列表。</td></tr>
+              <tr><td><code>forceplate</code></td><td><a href="api-datatypes.html#NexusForcePlate">NexusForcePlate</a></td><td>总是返回对象；只有测力台才有意义。</td></tr>
+              <tr><td><code>eyetracker</code></td><td><a href="api-datatypes.html#NexusEyeTracker">NexusEyeTracker</a></td><td>总是返回对象；只有眼动仪才有意义。</td></tr>
+            </tbody>
+          </table>
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(1)
+if dtype == 'ForcePlate':
+    print('台面中心 X:', (plate.UpperBounds[0] + plate.LowerBounds[0]) / 2.0)
+    print('世界坐标平移:', plate.WorldT)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceOutputIDFromName">
+          <h3>GetDeviceOutputIDFromName<span class="sig">(deviceID, name)</span><span class="kind">读</span></h3>
+          <p class="desc">在指定设备下按输出名查输出 ID。测力台常见输出名：<code>'Force'</code>、<code>'CoP'</code>、<code>'Moment'</code>。</p>
+          <p class="ret"><strong>返回</strong> 输出 ID（整数）。</p>
+<pre><code>force_out = vicon.GetDeviceOutputIDFromName(plate_id, 'Force')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceOutputDetails">
+          <h3>GetDeviceOutputDetails<span class="sig">(deviceID, deviceOutputID)</span><span class="kind">读</span></h3>
+          <p class="desc">输出级信息：名称、类型、单位、就绪状态、通道名与通道 ID。</p>
+          <p class="ret"><strong>返回 6 元组</strong>
+            <code>(name, output_type, unit, ready, channelNames, channelIDs)</code> ——
+            <code>ready</code> 为 <code>bool</code>，<code>channelNames</code> 为 <code>list[str]</code>，
+            <code>channelIDs</code> 为 <code>list[int]</code>。</p>
+<pre><code>name, otype, unit, ready, ch_names, ch_ids = \
+    vicon.GetDeviceOutputDetails(plate_id, force_out)
+if not ready:
+    print('输出未就绪，数据不可用')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelIDFromName">
+          <h3>GetDeviceChannelIDFromName<span class="sig">(deviceID, deviceOutputID, name)</span><span class="kind">读</span></h3>
+          <p class="desc">在指定输出下按通道名查通道 ID。测力台 Force 输出常见通道：<code>'Fx'</code>、<code>'Fy'</code>、<code>'Fz'</code>；CoP 输出：<code>'Cx'</code>、<code>'Cy'</code>、<code>'Cz'</code>。</p>
+          <p class="ret"><strong>返回</strong> 通道 ID（整数）。</p>
+<pre><code>fx_id = vicon.GetDeviceChannelIDFromName(plate_id, force_out, 'Fx')</code></pre>
+        </article>
+
+        <h2 id="channel">设备通道数据</h2>
+
+        <p>
+          六个读取方法按两个维度组合：<strong>局部 / 全局坐标</strong>，以及
+          <strong>整条 / 单帧 / “按光学帧对齐”</strong>。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:190px">坐标系</th><th style="width:230px">整条</th><th style="width:230px">单帧（采样帧号）</th><th>单光学帧（对齐）</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>局部（相对设备）</td>
+              <td><a href="#GetDeviceChannel"><code>GetDeviceChannel</code></a></td>
+              <td><a href="#GetDeviceChannelAtFrame"><code>GetDeviceChannelAtFrame</code></a></td>
+              <td><a href="#GetDeviceChannelForFrame"><code>GetDeviceChannelForFrame</code></a></td>
+            </tr>
+            <tr>
+              <td>全局（世界坐标）</td>
+              <td><a href="#GetDeviceChannelGlobal"><code>GetDeviceChannelGlobal</code></a></td>
+              <td><a href="#GetDeviceChannelGlobalAtFrame"><code>GetDeviceChannelGlobalAtFrame</code></a></td>
+              <td><a href="#GetDeviceChannelGlobalForFrame"><code>GetDeviceChannelGlobalForFrame</code></a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>AtFrame 与 ForFrame 的区别</b>
+          <code>…AtFrame</code> 用<strong>设备采样帧</strong>索引；<code>…ForFrame</code> 用
+          <strong>光学帧</strong>索引，返回与该光学帧对应的那组采样。做力学分析、要和标记点对齐时用
+          <code>Global</code> + <code>ForFrame</code>。
+        </div>
+
+        <article class="api-item" id="GetDeviceChannel">
+          <h3>GetDeviceChannel<span class="sig">(deviceID, deviceOutputID, channelID)</span><span class="kind">读</span></h3>
+          <p class="desc">读取整条通道（局部坐标）。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code> ——
+            <code>channelData</code> 为 <code>list[float]</code>，长度 = 帧数 × 每帧采样数；
+            <code>ready</code> 为 <code>bool</code>；<code>rate</code> 为 <code>float</code>（Hz）。</p>
+<pre><code>data, ready, rate = vicon.GetDeviceChannel(plate_id, force_out, fx_id)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelAtFrame">
+          <h3>GetDeviceChannelAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">按设备采样帧号读取该帧的全部采样。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code> ——
+            <code>channelData</code> 长度 = 每帧采样数。</p>
+<pre><code>samples, ready, rate = vicon.GetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelForFrame">
+          <h3>GetDeviceChannelForFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">按<strong>光学帧</strong>读取与该帧对应的采样数据。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code>。</p>
+<pre><code># 与标记点同一时间基准
+samples, ready, rate = vicon.GetDeviceChannelForFrame(plate_id, force_out, fx_id, 200)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobal">
+          <h3>GetDeviceChannelGlobal<span class="sig">(deviceID, deviceOutputID, channelID)</span><span class="kind">读</span></h3>
+          <p class="desc">读取整条通道，并把坐标/方向转到世界坐标系。力、力矩、CoP 用这个才有物理意义。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code>。</p>
+<pre><code>fz, ready, rate = vicon.GetDeviceChannelGlobal(plate_id, force_out, fz_id)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobalAtFrame">
+          <h3>GetDeviceChannelGlobalAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">按设备采样帧号读取全局坐标下的采样。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code>。</p>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobalForFrame">
+          <h3>GetDeviceChannelGlobalForFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">读</span></h3>
+          <p class="desc">按光学帧读取全局坐标下的采样。</p>
+          <p class="ret"><strong>返回</strong> <code>(channelData, ready, rate)</code>。</p>
+        </article>
+
+        <article class="api-item" id="SetDeviceChannel">
+          <h3>SetDeviceChannel<span class="sig">(deviceID, deviceOutputID, channelID, channelData)</span><span class="kind">写</span></h3>
+          <p class="desc">写入整条通道数据。<strong>推荐用这个方法批量修改</strong>，比逐帧调用快得多。</p>
+          <p class="desc">
+            原始采集里被标记为“缺失”的帧不可写：读出来是 0，写回去会被忽略，但
+            <code>channelData</code> 的长度仍必须覆盖全部采样。
+          </p>
+          <table>
+            <thead><tr><th style="width:150px">参数</th><th style="width:170px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>channelData</code></td><td>list[float]</td><td>长度 = 帧数 × 每帧采样数。</td></tr>
+            </tbody>
+          </table>
+<pre><code>import math
+
+for device_id in vicon.GetDeviceIDs():
+    name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+    if dtype != 'ForcePlate':
+        continue
+    force_out = vicon.GetDeviceOutputIDFromName(device_id, 'Force')
+    _, _, _, _, _, ch = vicon.GetDeviceOutputDetails(device_id, force_out)
+    fx = vicon.GetDeviceChannel(device_id, force_out, ch[0])[0]
+    fy = vicon.GetDeviceChannel(device_id, force_out, ch[1])[0]
+    fz = vicon.GetDeviceChannel(device_id, force_out, ch[2])[0]
+
+    # 小于 25 N 视为噪声，置零
+    mag = [math.sqrt(a * a + b * b + c * c) for a, b, c in zip(fx, fy, fz)]
+    for i, m in enumerate(mag):
+        if m &lt; 25.0:
+            fx[i] = fy[i] = fz[i] = 0.0
+
+    vicon.SetDeviceChannel(device_id, force_out, ch[0], fx)
+    vicon.SetDeviceChannel(device_id, force_out, ch[1], fy)
+    vicon.SetDeviceChannel(device_id, force_out, ch[2], fz)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetDeviceChannelAtFrame">
+          <h3>SetDeviceChannelAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame, channelData)</span><span class="kind">写</span></h3>
+          <p class="desc">写入单帧的单通道采样（长度为每帧采样数）。</p>
+          <div class="warn">
+            <b>性能</b>
+            源码明确提示：逐帧调用可能显著慢于一次 <code>SetDeviceChannel</code>。
+            批量修改请优先用整条写入。
+          </div>
+<pre><code>fx, _, _ = vicon.GetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200)
+fx = [v / 2.0 for v in fx]
+vicon.SetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200, fx)</code></pre>
+        </article>
+        <h2 id="spline">样条</h2>
+
+        <p>
+          样条接口用于对离散轨迹做平滑求导：先把有效散点提交给样条对象，再按需取 1 阶（速度）
+          或 2 阶（加速度）导数。一个 <code>ViconNexus</code> 实例只有一个样条对象，
+          <strong>后一次提交会覆盖前一次</strong>。
+        </p>
+
+        <article class="api-item" id="SubmitSplineTrajectory">
+          <h3>SubmitSplineTrajectory<span class="sig">(frames, xData, yData, zData, frameRate)</span><span class="kind">写</span></h3>
+          <p class="desc">用散点初始化（或重新初始化）样条对象。<strong>只提交有效点</strong>：
+            带缺口的帧会破坏拟合，应先按 <code>e</code> 过滤。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>frames</code></td><td>list[int]</td><td>散点对应的帧号（从 1 开始）。</td></tr>
+              <tr><td><code>xData</code>, <code>yData</code>, <code>zData</code></td><td>list[float]</td><td>坐标（mm），长度与 <code>frames</code> 一致。</td></tr>
+              <tr><td><code>frameRate</code></td><td>float</td><td>数据帧率（Hz），用于换算导数的时间基。</td></tr>
+            </tbody>
+          </table>
+<pre><code>frame_rate = vicon.GetFrameRate()
+start, end = vicon.GetTrialRange()
+frames = list(range(start, end + 1))
+
+x, y, z, e = vicon.GetTrajectory('Colin', 'LKNE')
+valid = [i for i, ok in enumerate(e) if ok]
+
+vicon.SubmitSplineTrajectory(
+    [frames[i] for i in valid],
+    [x[i] for i in valid],
+    [y[i] for i in valid],
+    [z[i] for i in valid],
+    frame_rate)
+
+vx, vy, vz = vicon.GetSplineResults(1)      # 速度
+ax, ay, az = vicon.GetSplineResults(2)      # 加速度</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSplineResults">
+          <h3>GetSplineResults<span class="sig">(derivative)</span><span class="kind">读</span></h3>
+          <p class="desc">取当前样条对象的指定阶导数。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>derivative</code></td><td>int</td><td>导数阶数，<code>1</code> = 速度，<code>2</code> = 加速度。</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>返回</strong> <code>(x, y, z)</code> —— 三个 <code>list[float]</code>，长度与提交的散点数一致。</p>
+          <div class="note">
+            <b>文档字符串有误</b>
+            <code>GetSplineResults</code> 的 docstring 把 <code>frames/x/y/z/frameRate</code>
+            又列了一遍（从 <code>SubmitSplineTrajectory</code> 复制而来），实际只有一个参数 <code>derivative</code>。
+          </div>
+        </article>
+
+        <h2 id="trialops">试次操作</h2>
+
+        <p>
+          这四个方法让外部 Python 进程充当“遥控器”驱动 Nexus。
+          <strong>它们不能在 Nexus 内部脚本中调用</strong>，否则会死锁或直接失败。
+        </p>
+
+        <article class="api-item" id="RunPipeline">
+          <h3>RunPipeline<span class="sig">(pipeline, location, timeout)</span><span class="kind">宿主</span></h3>
+          <p class="desc">运行 Nexus 的 Processing Pipeline。若已有 pipeline 在运行，本次调用会失败。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:130px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>pipeline</code></td><td>str</td><td>已存在 pipeline 的名称。</td></tr>
+              <tr><td><code>location</code></td><td>str</td><td>pipeline 位置：<code>'Private'</code>、<code>'Shared'</code>、<code>'System'</code>；传空串 <code>''</code> 走默认搜索。</td></tr>
+              <tr><td><code>timeout</code></td><td>int</td><td>客户端等待秒数。<strong>超时只让客户端提前返回</strong>，宿主的 pipeline 仍会继续跑。</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.RunPipeline('Reconstruct', '', 45)
+vicon.RunPipeline('MyLabeling', 'Private', 120)</code></pre>
+        </article>
+
+        <article class="api-item" id="OpenTrial">
+          <h3>OpenTrial<span class="sig">(trial, timeout)</span><span class="kind">宿主</span></h3>
+          <p class="desc">在宿主中打开试次。失败条件：pipeline 正在运行、处于 live 模式、
+            找不到对应 <code>.ENF</code> 文件、或宿主当前禁止打开。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:150px">类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>trial</code></td><td>str</td><td>试次的绝对路径，<strong>不含扩展名</strong>。</td></tr>
+              <tr><td><code>timeout</code></td><td>int</td><td>客户端等待秒数。</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.CloseTrial(30)
+vicon.OpenTrial(r'C:\Users\Public\Documents\Vicon\Nexus Sample Data'
+                r'\Colin\Walking Trials\Walking 2', 30)</code></pre>
+          <div class="warn">
+            <b>未保存数据会弹窗</b>
+            如果当前试次有未保存修改，宿主要求保存的对话框会阻塞自动化。
+            批处理前先 <code>SaveTrial()</code> 或 <code>CloseTrial()</code>。
+          </div>
+        </article>
+
+        <article class="api-item" id="SaveTrial">
+          <h3>SaveTrial<span class="sig">(timeout)</span><span class="kind">宿主</span></h3>
+          <p class="desc">把当前试次保存到磁盘。pipeline 运行中或 live 模式下会失败。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>timeout</code></td><td>int</td><td>客户端等待秒数。</td></tr></tbody>
+          </table>
+<pre><code>vicon.SaveTrial(30)</code></pre>
+        </article>
+
+        <article class="api-item" id="CloseTrial">
+          <h3>CloseTrial<span class="sig">(timeout)</span><span class="kind">宿主</span></h3>
+          <p class="desc">关闭当前试次，<strong>不保存</strong>。pipeline 运行中或 live 模式下会失败。</p>
+          <table>
+            <thead><tr><th style="width:110px">参数</th><th style="width:110px">类型</th><th>说明</th></tr></thead>
+            <tbody><tr><td><code>timeout</code></td><td>int</td><td>客户端等待秒数。</td></tr></tbody>
+          </table>
+<pre><code>vicon.CloseTrial(30)</code></pre>
+        </article>
+
+        <h2 id="errors">异常与开关</h2>
+
+        <article class="api-item" id="ViconNexusException">
+          <h3>ViconNexusException<span class="sig">(message, additional='')</span><span class="kind">异常</span></h3>
+          <p class="desc">
+            <code>viconnexusapi.ViconNexus.ViconNexusException</code>，继承自 <code>Exception</code>。
+            设计上用于表达 SDK 错误，但<strong>当前 1.0.3 版本的公开方法几乎不抛它</strong>：
+            绝大多数失败是打印到 stderr。<code>CreateSubjectParam</code> 等少数路径可能间接抛出。
+          </p>
+          <table>
+            <thead><tr><th style="width:130px">属性</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>message</code></td><td>主错误信息。</td></tr>
+              <tr><td><code>additional</code></td><td>附加说明，默认空串。</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong><code>str(exc)</code></strong> 返回 <code>message</code>，
+            有 <code>additional</code> 时拼成 <code>message + ' ' + additional</code>。</p>
+<pre><code>from viconnexusapi.ViconNexus import ViconNexusException
+
+try:
+    vicon.SetSubjectActive('Nobody', True)
+except ViconNexusException as exc:
+    print('SDK 错误:', exc.message, exc.additional)</code></pre>
+        </article>
+
+        <article class="api-item" id="GenerateErrors">
+          <h3>GenerateErrors<span class="sig">属性（默认 True）</span><span class="kind">控制</span></h3>
+          <p class="desc">
+            控制底层返回 <code>Error()</code> 时是否把 <code>ResultString()</code> 打印到
+            <code>stderr</code>。批量自动化时可临时关掉以减少噪音，但要自己校验结果。
+          </p>
+<pre><code>vicon.GenerateErrors = False
+try:
+    vicon.SetSubjectActive('Nobody', True)   # 静默失败
+finally:
+    vicon.GenerateErrors = True</code></pre>
+          <div class="tip">
+            <b>推荐的错误处理套路</b>
+            关掉打印 → 调用 → 立即读回校验（例如 <code>HasTrajectory</code>、<code>GetModelOutputNames</code>）
+            → 记录失败项。因为返回值本身不携带错误状态。
+          </div>
+        </article>
+
+        <article class="api-item" id="Client">
+          <h3>Client<span class="sig">属性</span><span class="kind">控制</span></h3>
+          <p class="desc">
+            底层 <code>ViconNexusClient</code> 实例。门面层没包装的命令（例如
+            <code>GetCommandList</code>、<code>ProcessRequest</code>、<code>AllocString</code>）
+            可以从这里直达，返回值是原始 <code>Output_*</code> 对象。
+            见 <a href="api-lowlevel.html">底层客户端</a>。
+          </p>
+<pre><code>raw = vicon.Client.GetCommandInfo('GetTrajectory')
+print(raw.ResultString().Value())</code></pre>
+        </article>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>示例脚本 · Vicon Nexus Python SDK</title>
+<meta name="description" content="官方 8 个示例脚本的用途、调用方法、关键代码与注意事项。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API 参考 · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="打开导航">☰</button>
+      <div class="crumbs"><a href="index.html">文档</a><span class="sep">/</span>示例脚本</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="搜索 API、方法或页面…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="切换主题">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>示例脚本</h1>
+        <p class="lede">
+          SDK 自带 8 个示例，覆盖“把数据读出来看看”到“批量补洞、检测足事件”的常见任务。
+          它们是理解 API 用法最快的入口，但<strong>都是 Python 2 语法</strong>，直接拿到 Python 3 里要改
+          <code>print</code> 与 <code>xrange</code>。
+        </p>
+
+        <table>
+          <thead><tr><th style="width:230px">脚本</th><th>作用</th><th style="width:120px">需要参数</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#DisplayTrialInfo"><code>DisplayTrialInfo.py</code></a></td><td>打印试次概况与设备列表</td><td>无</td></tr>
+            <tr><td><a href="#DisplaySubjectInfo"><code>DisplaySubjectInfo.py</code></a></td><td>打印受试者的标记点/骨段/关节/参数</td><td>受试者名</td></tr>
+            <tr><td><a href="#DisplayModelOutputInfo"><code>DisplayModelOutputInfo.py</code></a></td><td>按分组列出模型输出及分量量纲</td><td>受试者名</td></tr>
+            <tr><td><a href="#SimpleMidpoint"><code>SimpleMidpoint.py</code></a></td><td>生成两点中点的建模标记点</td><td>受试者 + 2 标记点 + 输出名</td></tr>
+            <tr><td><a href="#DetectFootEvents"><code>DetectFootEvents.py</code></a></td><td>按力阈值检测足着地/离地并写事件</td><td>脚本内硬编码</td></tr>
+            <tr><td><a href="#ProcessGaps"><code>GapFilling/ProcessGaps.py</code></a></td><td>线性插值函数（被其它脚本 import）</td><td>—</td></tr>
+            <tr><td><a href="#FillGaps"><code>GapFilling/FillGaps.py</code></a></td><td>批量填补小缺口</td><td>—</td></tr>
+            <tr><td><a href="#NexusConformityTest"><code>NexusConformityTest.py</code></a></td><td>安装验收：测量标定杆点距的均值/标准差</td><td>无（在 pipeline 中运行）</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="run">怎么运行</h2>
+        <p>两种方式，取决于脚本是否调用 <code>OpenTrial</code> / <code>SaveTrial</code> / <code>RunPipeline</code>：</p>
+<pre><code>:: 方式 A：外部进程（推荐，能力最全）
+python DisplayTrialInfo.py
+
+:: 方式 B：Nexus 内部 —— Pipeline 里加一个 "Run Python Operation"
+:: 适合作为处理流程的一环，但不能控制试次开关</code></pre>
+        <p>
+          示例的 <code>if __name__ == "__main__":</code> 段落直接用 <code>sys.argv</code> 取参，
+          所以命令行方式要按脚本约定补参数。
+        </p>
+
+        <h2 id="DisplayTrialInfo">DisplayTrialInfo.py</h2>
+        <p>最小的“读一读”示例：试次名、路径、帧数、帧率、可更新区间、受试者列表、设备列表。</p>
+<pre><code>(path, name) = vicon.GetTrialName()
+framecount = vicon.GetFrameCount()
+framerate  = vicon.GetFrameRate()
+(startFrame, endFrame) = vicon.GetTrialRange()
+
+for deviceID in vicon.GetDeviceIDs():
+    deviceDetails = vicon.GetDeviceDetails(deviceID)
+    deviceName, deviceType, deviceRate = deviceDetails[0:3]
+    print 'Device', deviceID, deviceName, deviceType, deviceRate</code></pre>
+        <p>
+          用到了 <a href="api-viconnexus.html#GetTrialName">GetTrialName</a>、
+          <a href="api-viconnexus.html#GetFrameCount">GetFrameCount</a>、
+          <a href="api-viconnexus.html#GetTrialRange">GetTrialRange</a>、
+          <a href="api-viconnexus.html#GetDeviceIDs">GetDeviceIDs</a>、
+          <a href="api-viconnexus.html#GetDeviceDetails">GetDeviceDetails</a>。
+          注意它<strong>没有</strong> <code>Disconnect()</code>，作为一次性脚本无妨。
+        </p>
+
+        <h2 id="DisplaySubjectInfo">DisplaySubjectInfo.py</h2>
+        <p>受试者画像：标记点清单 → 每个骨骼段关联的标记点 → 关节的父子段 → 静态参数值。</p>
+<pre><code>for Segment in vicon.GetSegmentNames(subject):
+    markers = vicon.GetSegmentDetails(subject, Segment)[-1]
+    print Segment, markers
+
+for Joint in vicon.GetJointNames(subject):
+    (parent, child) = vicon.GetJointDetails(subject, Joint)
+    print Joint, '[', parent, '-', child, ']'
+
+for param in vicon.GetSubjectParamNames(subject):
+    value = vicon.GetSubjectParamDetails(subject, param)[0]
+    unit  = vicon.GetSubjectParamDetails(subject, param)[1]</code></pre>
+        <p>
+          <code>GetSegmentDetails(...)[-1]</code> 取的是第 3 个返回值（markers）。
+          参数那段连续调用两次 <code>GetSubjectParamDetails</code>，是冗余往返——自己写时合并成一次解包更好。
+        </p>
+<pre><code>python DisplaySubjectInfo.py Colin</code></pre>
+
+        <h2 id="DisplayModelOutputInfo">DisplayModelOutputInfo.py</h2>
+        <p>
+          先收集全部分组名并排序，再逐组列出输出名，最后展开每个输出的分量与量纲。
+          适合在写批处理脚本前“探底”，确认目标试次里到底有哪些输出可用。
+        </p>
+<pre><code>for groupName in sorted(set of groups):
+    for ModelOutputName in outputs_in_group:
+        components = vicon.GetModelOutputDetails(subject, ModelOutputName)[1]
+        types      = vicon.GetModelOutputDetails(subject, ModelOutputName)[2]
+        # 输出形如: LHipAngles [X(Angle), Y(Angle), Z(Angle)]</code></pre>
+        <p>输出样例：</p>
+<pre><code>Model Outputs:
+Angles
+  LHipAngles [X(Angle), Y(Angle), Z(Angle)]
+Forces
+  LGroundReactionForce [X(Force), Y(Force), Z(Force)]
+Plug-in Gait Bones
+  HED [RX(Angle), RY(Angle), RZ(Angle), TX(Length), ...]</code></pre>
+
+        <h2 id="SimpleMidpoint">SimpleMidpoint.py</h2>
+        <p>
+          把两个标记点的中点写成一个新的建模标记点。演示了“创建输出 → 读输入 → 算 → 写回”的完整闭环，
+          也是最常见的自定义点生成模板。
+        </p>
+<pre><code>vicon.CreateModeledMarker(subject, name)          # 先建容器
+
+(X1, Y1, Z1, E1) = vicon.GetTrajectory(subject, marker1)
+(X2, Y2, Z2, E2) = vicon.GetTrajectory(subject, marker2)
+
+(data, exists) = vicon.GetModelOutput(subject, name)
+for i in range(vicon.GetFrameCount()):
+    if E1[i] and E2[i]:
+        exists[i] = True
+        data[0][i] = (X1[i] + X2[i]) / 2.0
+        data[1][i] = (Y1[i] + Y2[i]) / 2.0
+        data[2][i] = (Z1[i] + Z2[i]) / 2.0
+    else:
+        exists[i] = False
+
+vicon.SetModelOutput(subject, name, data, exists)</code></pre>
+<pre><code>python SimpleMidpoint.py Colin RKNE RANK MyMidpoint</code></pre>
+        <div class="note">
+          <b>要点</b>
+          任一输入缺失时整帧标记为不存在，而不是只取有效的那一个点——
+          这个“全有或全无”的策略在几何派生点里通常是对的。
+        </div>
+
+        <h2 id="DetectFootEvents">DetectFootEvents.py</h2>
+        <p>
+          最完整的一个示例：遍历所有测力台，按合力阈值（默认 20 N）判断支撑相，
+          用“最近标记点落在台面范围内”来决定 Left / Right 上下文，最后创建
+          <code>Foot Strike</code> / <code>Foot Off</code> 事件。它还演示了如何处理
+          “设备采样率高于帧率”的采样索引换算。
+        </p>
+        <p>关键步骤：</p>
+<ol>
+  <li>按 <code>GetDeviceIDs</code> 找设备，用 <code>GetDeviceDetails()[1] == 'ForcePlate'</code> 过滤。</li>
+  <li>用 <code>GetDeviceOutputIDFromName(id, 'Force')</code> + <code>GetDeviceChannelIDFromName(..., 'Fx'/'Fy'/'Fz')</code> 定位通道。</li>
+  <li>力用 <code>GetDeviceChannelGlobal</code> 读（全局坐标），CoP 用 <code>GetDeviceChannel</code> 读（局部，随后手算 <code>/1000</code> 转 m）。</li>
+  <li>每帧每采样算合力模长，越过阈值且 <code>Fz &lt; 0</code> 视为着地。</li>
+  <li>用 <code>ViconUtils.Globalise/Localise</code> 把候选标记点变换到台面局部坐标，判断是否落在
+      <code>LowerBounds…UpperBounds</code> 内并取最近者定侧别。</li>
+  <li>写事件前先用 <code>GetEvents</code> 判重，避免重复标注。</li>
+</ol>
+<pre><code>vicon = ViconNexus.ViconNexus()
+vicon.ClearAllEvents()
+eventDetector = DetectFootEvents()
+eventDetector.FindEvents(vicon, "Colin", 20.0, "LTOE", "LANK", "RTOE", "RANK")</code></pre>
+        <div class="warn">
+          <b>照抄前先改三个地方</b>
+          <ul style="margin:6px 0 0">
+            <li>受试者名与四个标记点名硬编码在 <code>__main__</code> 里。</li>
+            <li>索引混用：<code>trajExists[idx]</code> 里 <code>idx</code> 从 <code>startFrame</code>（1 基）开始，而列表是 0 基，实测会偏一帧。</li>
+            <li><code>SamplesPerFrame = deviceRate / rate</code> 在 Python 2 里是整除、Python 3 里是浮点，后续 <code>range</code> 会炸。改用 <code>int(...)</code>。</li>
+          </ul>
+        </div>
+
+        <h2 id="ProcessGaps">GapFilling/ProcessGaps.py</h2>
+        <p>只有 32 行：给定缺口两侧的帧号与轨迹数组，做线性插值，返回填补后的
+          <code>(X, Y, Z, E)</code>。它是纯函数，不碰 Nexus，方便单测。</p>
+<pre><code>def ProcessGaps(startGapFrame, endGapFrame, trajX, trajY, trajZ):
+    dataX1, dataX2 = trajX[startGapFrame], trajX[endGapFrame]
+    for frameNum in range(startGapFrame + 1, endGapFrame):
+        x = dataX1 + (dataX2 - dataX1) * (frameNum - startGapFrame) \
+            / (endGapFrame - startGapFrame)
+        ...
+    return (X, Y, Z, E)</code></pre>
+        <div class="note">
+          <b>两个细节</b>
+          返回的 <code>E</code> 只在循环里赋值，若缺口长度为 0（起止相邻）会抛
+          <code>UnboundLocalError</code>；另外插值只在缺口<strong>内部</strong>做，端点缺失不处理。
+        </div>
+
+        <h2 id="FillGaps">GapFilling/FillGaps.py</h2>
+        <p>
+          批处理外壳：先扫 <code>GetTrialRange()</code> 区间内是否存在缺口，再统计每个缺口的长度，
+          只填补不超过 <code>MaxGap</code> 的，最后 <code>SetTrajectory</code> 写回。
+        </p>
+<pre><code>subjects = vicon.GetSubjectNames()
+markers  = ['LTOE', 'RTOE']
+FillGaps(vicon, subjects, markers, 4)      # 最多补 4 帧</code></pre>
+        <ol>
+  <li><code>GetTrajectory</code> 拿全量数据与存在性。</li>
+  <li>找到第一帧/最后一帧有效数据，界定处理区间（端点不插值）。</li>
+  <li>相邻有效帧号差 &gt; 1 即一个缺口，记录 <code>(前置帧, 后置帧)</code> 与长度。</li>
+  <li>长度 ≤ <code>MaxGap</code> 的调用 <code>ProcessGaps</code> 填洞。</li>
+  <li><code>SetTrajectory</code> 一次性写回整条轨迹。</li>
+</ol>
+        <div class="tip">
+          <b>这是“最小可用”的补洞策略</b>
+          线性插值只适合小缺口（≤4 帧）。大缺口建议先在 Nexus 里用 Woltring / Pattern fill，
+          或改用样条（<a href="api-viconnexus.html#SubmitSplineTrajectory">SubmitSplineTrajectory</a>）。
+        </div>
+
+        <h2 id="NexusConformityTest">NexusConformityTest.py</h2>
+        <p>
+          给安装工程师用的验收脚本（v1.1, 2019-03-07）：对着标定杆（wand）采集的试次，
+          计算杆上两点间距的均值与标准差，判断系统精度是否满足出厂指标。
+        </p>
+        <p>使用前提（脚本头部注释写明）：</p>
+        <ol>
+  <li>新建 session，删除其中的受试者文件。</li>
+  <li>采集 ≥1000 帧、5 个标记点的标定杆试次（主动或被动）。</li>
+  <li>加载对应 VSK（如 <code>…\CalibrationObjects\Active Wand v2.vsk</code>）。</li>
+  <li>Reconstruct + Label。</li>
+  <li>在 pipeline 中用 <em>Run Python Operation</em> 运行本脚本。</li>
+</ol>
+        <p>输出写进 Nexus Log，并额外生成两个文本文件与一份 CSV，供填入验收文档。</p>
+<pre><code>class Trajectory(object):
+    def GetData(self, subject_name):
+        self.x, self.y, self.z, self.occluded = v.GetTrajectory(subject_name, self.name)
+
+def GetDistance(m1, m2, frame):
+    return ((m1.x[frame]-m2.x[frame])**2 +
+            (m1.y[frame]-m2.y[frame])**2 +
+            (m1.z[frame]-m2.z[frame])**2) ** 0.5</code></pre>
+        <p>
+          它是一个“自包含脚本”，不是可复用库：模块级直接 <code>v = ViconNexus.ViconNexus()</code>，
+          导入即连接。作为 API 用法参考价值有限，但作为“如何写一个完整的批处理脚本”的样板不错。
+        </p>
+
+        <h2 id="patterns">从示例里提炼的写法</h2>
+        <table>
+          <thead><tr><th style="width:190px">模式</th><th>代码骨架</th></tr></thead>
+          <tbody>
+            <tr><td>遍历受试者 × 标记点</td><td><code>for s in vicon.GetSubjectNames(): for m in vicon.GetMarkerNames(s): …</code></td></tr>
+            <tr><td>新建派生数据</td><td><code>CreateModeledMarker</code> → <code>GetModelOutput</code> → 改 → <code>SetModelOutput</code></td></tr>
+            <tr><td>缺帧安全写入</td><td>用 <code>exists</code> 列表逐帧置 <code>False</code>，坐标填 0</td></tr>
+            <tr><td>整条替换优于逐帧</td><td><code>SetTrajectory</code> / <code>SetDeviceChannel</code> 一次写完</td></tr>
+            <tr><td>幂等</td><td>创建前用 <code>Get*Names</code> 判重；写事件前用 <code>GetEvents</code> 判重</td></tr>
+          </tbody>
+        </table>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · 文档</span>
+      <span>SDK 版本 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="../assets/nav.js"></script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

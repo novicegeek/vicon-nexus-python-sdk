@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>viconnexusutils reference · Vicon Nexus Python SDK</title>
+<meta name="description" content="NexusObject, NexusTrajectory, NexusAngles, NexusSegment: numpy-backed object wrappers.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span><a href="api-viconnexus.html">API reference</a><span class="sep">/</span>viconnexusutils</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>viconnexusutils</h1>
+        <p class="lede">
+          An optional, separately distributed package (1.0.0) that wraps the SDK's
+          “list of tuples” into numpy-backed objects: trajectories, angles and bone segments.
+          Objects store their data internally in <code>(frames, 3)</code> or <code>(frames, 9)</code>
+          ndarrays, and <code>Read()</code> / <code>Write()</code> move that data to and from Nexus.
+        </p>
+
+        <div class="pill-row">
+          <span class="pill">Requires numpy</span>
+          <span class="pill">Requires six</span>
+          <span class="pill">Frame numbers are 1-based</span>
+          <span class="pill">Some methods are unfinished</span>
+        </div>
+
+        <div class="warn">
+          <b>Read this first: incompatible with newer numpy</b>
+          The package uses <code>np.long</code> and <code>np.bool</code>; both aliases were removed in
+          numpy 1.24, so calling the affected methods (<code>Position(frames)</code>, <code>Read()</code>,
+          <code>AngleBetween</code> and others) raises
+          <code>AttributeError: module 'numpy' has no attribute 'long'</code>.
+          Pin your environment to <code>numpy&lt;1.24</code>, or replace
+          <code>np.long → int</code> and <code>np.bool → bool</code> in the source yourself.
+        </div>
+
+        <h2 id="model">Data model</h2>
+        <table>
+          <thead><tr><th style="width:180px">Class</th><th style="width:130px">Internal array</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>NexusTrajectory</code></td><td><code>(M, 3)</code></td><td>A set of 3-D points: every element is one position (mm).</td></tr>
+            <tr><td><code>NexusAngles</code></td><td><code>(M, 3)</code></td><td>An angle triple (stored as angle-axis in the code; units follow Nexus degrees).</td></tr>
+            <tr><td><code>NexusSegment</code></td><td><code>(M, 3)</code> ×3</td><td>A bone segment: one block each for translation, Euler-angle orientation and scale.</td></tr>
+          </tbody>
+        </table>
+        <p>
+          <code>M</code> is the frame count. Missing data is always expressed as <code>NaN</code>, and on
+          <code>Write()</code> any frame containing <code>NaN</code> is set to <code>exists=False</code>.
+        </p>
+
+        <h2 id="NexusObject">NexusObject</h2>
+        <p><code>viconnexusutils.NexusObject.NexusObject</code> — abstract base class defining three contract methods.</p>
+
+        <article class="api-item" id="subject_name">
+          <h3>subject_name<span class="sig">property</span><span class="kind">read/write</span></h3>
+          <p class="desc">Name of the subject the object belongs to. It can be passed at construction time and changed afterwards; the object uses it to locate its data when reading and writing.</p>
+<pre><code>traj = NexusTrajectory.NexusTrajectory('Colin')
+traj.subject_name = 'Patricia'</code></pre>
+        </article>
+
+        <article class="api-item" id="Create">
+          <h3>Create<span class="sig">(name, SDK)</span><span class="kind">abstract</span></h3>
+          <p class="desc">Creates an empty output in Nexus (skipped if it already exists). Implemented by subclasses.</p>
+        </article>
+
+        <article class="api-item" id="Read">
+          <h3>Read<span class="sig">(name, SDK)</span><span class="kind">abstract</span></h3>
+          <p class="desc">Reads the output with the given name from Nexus into the object's internal array (<code>NaN</code> marks a missing frame).</p>
+        </article>
+
+        <article class="api-item" id="Write">
+          <h3>Write<span class="sig">(name, SDK)</span><span class="kind">abstract</span></h3>
+          <p class="desc">Writes the object's internal array back to the like-named output in Nexus. If it holds fewer frames than the trial, values are copied per frame / padded with <code>NaN</code>;
+            if it holds more than the trial's frame count, <code>ValueError('Too many output points for trial')</code> is raised.</p>
+        </article>
+
+        <p>
+          Both <code>Read</code> and <code>Write</code> require <code>SDK</code> to be a
+          <code>ViconNexus.ViconNexus</code> instance, otherwise they raise <code>TypeError</code>;
+          if no output of that name can be found they raise <code>ValueError</code>.
+        </p>
+
+        <h2 id="NexusTrajectory">NexusTrajectory</h2>
+        <p><code>viconnexusutils.NexusTrajectory.NexusTrajectory(subject_name=None)</code></p>
+
+        <table>
+          <thead><tr><th style="width:250px">Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>If it does not exist, calls <code>CreateModeledMarker</code> to create a modeled marker.</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>If the name is a marker, reads <code>GetTrajectory</code>; if it is a model output, reads <code>GetModelOutput</code>; neither raises <code>ValueError</code>.</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>Writes back through <code>SetModelOutput</code> (so the target must be a model output, not a raw marker).</td></tr>
+            <tr><td><a href="#Position"><code>Position(frames=None)</code></a></td><td>Get positions.</td></tr>
+            <tr><td><a href="#SetPosition"><code>SetPosition(components, frames=None)</code></a></td><td>Set positions.</td></tr>
+            <tr><td><code>mean()</code></td><td>Averages per frame and returns a new <code>NexusTrajectory</code>.</td></tr>
+            <tr><td><code>+ - * /</code>, <code>mean</code></td><td>Element-wise operations; see the operator table below.</td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="Position">
+          <h3>Position<span class="sig">(frames=None)</span><span class="kind">read</span></h3>
+          <p class="desc">Reads position data.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>frames</code></td><td>None / int / array</td><td><code>None</code> takes all frames; a scalar takes that frame (<strong>1-based</strong>, with <code>frames-1</code> applied internally); an array takes several frames.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> a nested <code>list</code> (<code>M×3</code> for all frames; for a single frame a length-3
+            <code>numpy</code> row vector, <strong>not</strong> a plain list).</p>
+<pre><code>traj = NexusTrajectory.NexusTrajectory('Colin')
+traj.Read('LKNE', vicon)
+print(traj.Position()[0])      # frame 1
+print(traj.Position(50))       # frame 50</code></pre>
+        </article>
+
+        <article class="api-item" id="SetPosition">
+          <h3>SetPosition<span class="sig">(components, frames=None)</span><span class="kind">write</span></h3>
+          <p class="desc">Sets position data. <code>components</code> must be <code>N×3</code>; when <code>frames</code>
+            is given only those frames are updated, and its length must match the number of rows in
+            <code>components</code>, otherwise <code>ValueError</code> is raised.</p>
+<pre><code>traj.SetPosition([[0.0, 0.0, 0.0]] * 10)          # all frames
+traj.SetPosition([[1.0, 2.0, 3.0]], [50])          # change frame 50 only</code></pre>
+          <div class="note">
+            <b>Implementation flaw</b>
+            The <code>np.append(...)</code> used to “grow the array backwards” after a per-frame write has its
+            return value discarded, so the array length is <strong>never actually extended</strong>. When you
+            need a longer array, pass the complete array in a single call.
+          </div>
+        </article>
+
+        <h3 id="traj-ops">Operators</h3>
+        <table>
+          <thead><tr><th style="width:170px">Expression</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td><code>traj + traj2</code> / <code>+ array</code></td><td>Element-wise addition, returning a new trajectory. Subject names are merged as “keep if equal, take the non-empty side, clear on conflict”.</td></tr>
+            <tr><td><code>traj - traj2</code></td><td>Element-wise subtraction.</td></tr>
+            <tr><td><code>traj * scalar</code> / <code>scalar * traj</code></td><td>Scaling.</td></tr>
+            <tr><td><code>traj / scalar</code></td><td>Scaling.</td></tr>
+            <tr><td><code>traj * segment</code></td><td><strong>Transforms points from the segment frame to global</strong> (calls <code>segment.GlobalisePoint</code>).</td></tr>
+            <tr><td><code>traj / segment</code></td><td><strong>Transforms global points into the segment frame</strong> (calls <code>segment.LocalisePoint</code>).</td></tr>
+            <tr><td><code>-traj</code> / <code>+traj</code></td><td>Negation / copy.</td></tr>
+          </tbody>
+        </table>
+<pre><code># segment-local → world coordinates, and it reads naturally
+world_points = local_points * segment</code></pre>
+
+        <h2 id="NexusAngles">NexusAngles</h2>
+        <p><code>viconnexusutils.NexusAngles.NexusAngles(subject_name=None)</code></p>
+
+        <table>
+          <thead><tr><th style="width:250px">Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>Creates a model output with group <code>Angles</code>, components <code>X/Y/Z</code> and quantity <code>Angle</code>.</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>Reads the like-named model output, marking missing frames as <code>NaN</code>.</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>Writes the model output back.</td></tr>
+            <tr><td><code>Angles(frames)</code></td><td>Reads the angles (same semantics as <code>Position</code>). <strong>Note that <code>frames</code> is a required argument.</strong></td></tr>
+            <tr><td><code>SetAngles(components, frames=None)</code></td><td>Sets the angles.</td></tr>
+            <tr><td><code>* / </code>, <code>-</code>, <code>+</code></td><td>Scale / negate the angle values.</td></tr>
+            <tr><td><code>mean()</code></td><td><strong>Broken</strong>, see below.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="warn">
+          <b>Known defects (1.0.0)</b>
+          <ul style="margin:6px 0 0">
+            <li><code>Read()</code> uses <code>angles[~e, :] = np.nan</code>, where <code>angles</code> has shape
+              <code>(3, M)</code> while <code>e</code> has length <code>M</code>; once there are more than 3 frames
+              the mask dimensions do not match and it raises <code>IndexError</code>. Prefer calling
+              <code>ViconNexus.GetModelOutput</code> directly and setting NaN yourself.</li>
+            <li><code>mean()</code> writes its result into <code>result._position</code> (this class has no such
+              attribute), so the angles in the returned value are still the initial <code>NaN</code>. If you
+              need a mean, call <code>np.mean</code> yourself.</li>
+            <li><code>Angles()</code> has no default argument; only <code>None</code> means “all frames”.</li>
+          </ul>
+        </div>
+
+        <h2 id="NexusSegment">NexusSegment</h2>
+        <p><code>viconnexusutils.NexusSegment.NexusSegment(subject=None, axisOrder='xyz')</code> —
+          a bone segment carrying position, orientation and scale.</p>
+
+        <article class="api-item" id="global_segment">
+          <h3>global_segment<span class="sig">()</span><span class="kind">static constructor</span></h3>
+          <p class="desc">Returns the “world segment”: at the origin, with unit rotation and scale 1, usable as the starting point for coordinate transforms.</p>
+<pre><code>world = NexusSegment.NexusSegment.global_segment()</code></pre>
+        </article>
+
+        <article class="api-item" id="axisOrder">
+          <h3>axisOrder<span class="sig">property</span><span class="kind">read/write</span></h3>
+          <p class="desc">Euler angle axis order, default <code>'xyz'</code>. The setter validates that it contains
+            <code>x</code>, <code>y</code> and <code>z</code>, otherwise it raises
+            <code>ValueError('Invalid axis order…')</code>.</p>
+        </article>
+
+        <table>
+          <thead><tr><th style="width:260px">Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>Create(name, SDK)</code></td><td>Creates a model output in the <code>Plug-in Gait Bones</code> group with 9 components (<code>RX RY RZ TX TY TZ SX SY SZ</code>).</td></tr>
+            <tr><td><code>Read(name, SDK)</code></td><td>Reads the 9 components: the first 3 are angle-axis (degrees) → angle-axis matrix → Euler angles; the next 3 are translation; the last 3 are scale.</td></tr>
+            <tr><td><code>Write(name, SDK)</code></td><td>Euler angles → matrix → angle-axis (degrees), then written back as 9 components.</td></tr>
+            <tr><td><a href="#Populate"><code>Populate(origin, firstAxis, crossingAxis, axisOrder=None)</code></a></td><td>Builds a segment from three trajectories.</td></tr>
+            <tr><td><code>Position(frames=None)</code> / <code>SetPosition(...)</code></td><td>Translation.</td></tr>
+            <tr id="Orientation"><td><code>Orientation(frames=None)</code> / <code>SetOrientation(...)</code></td><td>Orientation (Euler angles, radians).</td></tr>
+            <tr id="Scale"><td><code>Scale(frames=None)</code> / <code>SetScale(...)</code></td><td>Scale (<code>Scale()</code> is broken, see below).</td></tr>
+            <tr><td><a href="#GlobalisePoint"><code>GlobalisePoint(point, frames=None)</code></a></td><td>Segment-local point → global.</td></tr>
+            <tr><td><a href="#LocalisePoint"><code>LocalisePoint(point, frames=None)</code></a></td><td>Global point → segment-local.</td></tr>
+            <tr><td><a href="#TranslatePointInSegment"><code>TranslatePointInSegment(point, translation, frames=None)</code></a></td><td>Translate a point inside the segment frame.</td></tr>
+            <tr><td><a href="#AngleBetween"><code>AngleBetween(segment, angle_type='euler', order='xyz')</code></a></td><td>Angle between two segments.</td></tr>
+            <tr><td><code>+ - </code> (with a trajectory)</td><td>Translates the segment origin along the trajectory.</td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="Populate">
+          <h3>Populate<span class="sig">(origin, firstAxis, crossingAxis, axisOrder=None)</span><span class="kind">write</span></h3>
+          <p class="desc">Defines a bone segment from three trajectories: <code>origin</code> gives the origin,
+            <code>firstAxis</code> gives the primary axis' <b>direction and length</b>, and the cross product of
+            <code>crossingAxis</code> with the primary axis defines the plane of the second axis.
+            The magnitude of the primary axis also serves as the segment's scale.</p>
+          <table>
+            <thead><tr><th style="width:150px">Parameter</th><th style="width:180px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>origin</code></td><td>NexusTrajectory / N×3</td><td>Trajectory of the segment origin.</td></tr>
+              <tr><td><code>firstAxis</code></td><td>NexusTrajectory / N×3</td><td>Vector pointing along the primary axis (relative to the origin).</td></tr>
+              <tr><td><code>crossingAxis</code></td><td>NexusTrajectory / N×3</td><td>Vector defining the plane in which the second axis lies.</td></tr>
+              <tr><td><code>axisOrder</code></td><td>str</td><td>Optional; defaults to the object's current <code>axisOrder</code>.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>None</code>. All three inputs must have the same length, otherwise
+            <code>ValueError('Mismatched sizes…')</code> is raised; a shape other than <code>N×3</code> raises
+            <code>TypeError</code>.</p>
+<pre><code>seg = NexusSegment.NexusSegment('Colin')
+
+pelvis = NexusTrajectory.NexusTrajectory('Colin');  pelvis.Read('PEL', vicon)
+sacrum = NexusTrajectory.NexusTrajectory('Colin');  sacrum.Read('SACR', vicon)
+lhip   = NexusTrajectory.NexusTrajectory('Colin');  lhip.Read('LHIP', vicon)
+
+seg.Populate(pelvis, sacrum - pelvis, lhip - pelvis)
+seg.Create('MySeg', vicon)
+seg.Write('MySeg', vicon)</code></pre>
+        </article>
+
+        <article class="api-item" id="GlobalisePoint">
+          <h3>GlobalisePoint<span class="sig">(point, frames=None)</span><span class="kind">read</span></h3>
+          <p class="desc">Transforms points given in segment-local coordinates into global coordinates, using that frame's pose for every frame.</p>
+          <p class="ret"><strong>Returns</strong> a <code>list</code> (<code>M×3</code>); <code>point</code> may be a
+            <code>NexusTrajectory</code> or an <code>N×3</code> list, and a length of 1 is automatically
+            broadcast to all frames.</p>
+<pre><code>knee_global = seg.GlobalisePoint([[0.0, 0.0, 40.0]])</code></pre>
+        </article>
+
+        <article class="api-item" id="LocalisePoint">
+          <h3>LocalisePoint<span class="sig">(point, frames=None)</span><span class="kind">read</span></h3>
+          <p class="desc">Transforms global points into segment-local coordinates.</p>
+          <p class="ret"><strong>Returns</strong> a <code>list</code> (<code>M×3</code>).</p>
+        </article>
+
+        <article class="api-item" id="TranslatePointInSegment">
+          <h3>TranslatePointInSegment<span class="sig">(point, translation, frames=None)</span><span class="kind">read</span></h3>
+          <p class="desc">Translates the point by the vector <code>translation</code> expressed in the segment frame, returning a
+            <code>NexusTrajectory</code> in <strong>global coordinates</strong>. Use it to “offset a point by some
+            distance along the bone segment”.</p>
+<pre><code># 100 mm up the shank segment from the ankle point
+offset_traj = seg.TranslatePointInSegment(ankle, [0.0, 0.0, 100.0])</code></pre>
+        </article>
+
+        <article class="api-item" id="AngleBetween">
+          <h3>AngleBetween<span class="sig">(segment, angle_type='euler', order='xyz')</span><span class="kind">read</span></h3>
+          <p class="desc">Computes the relative orientation between this segment and another one, returning <code>NexusAngles</code>.
+            When the two segments have different frame counts, the single-frame side is broadcast; if neither is 1
+            and the counts differ, <code>ValueError('Incompatible segments…')</code> is raised.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>segment</code></td><td>NexusSegment</td><td>The segment to compare against; any other type raises <code>TypeError</code>.</td></tr>
+              <tr><td><code>angle_type</code></td><td>str</td><td><code>'euler'</code> (default, degrees), <code>'fixed'</code> (degrees, negated after transposing), <code>'helical'</code> (angle-axis, radians).</td></tr>
+              <tr><td><code>order</code></td><td>str</td><td>Euler axis order, default <code>'xyz'</code>.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> a <code>NexusAngles</code>, with its subject name set by the merge rules.</p>
+<pre><code>rel = thigh.AngleBetween(shank, 'euler', 'xyz')
+rel.Write('MyKneeAngle', vicon)</code></pre>
+          <div class="note">
+            <b><code>helical</code> uses different units from the other two</b>
+            <code>'euler'</code>/<code>'fixed'</code> are multiplied by <code>180/π</code> (degrees), whereas
+            <code>'helical'</code> is not (radians). Normalise units before mixing them.
+          </div>
+        </article>
+
+        <h2 id="bugs">Known issues at a glance</h2>
+        <table>
+          <thead><tr><th style="width:280px">Location</th><th>Symptom</th><th style="width:200px">Workaround</th></tr></thead>
+          <tbody>
+            <tr><td><code>np.long</code> / <code>np.bool</code></td><td>Raises <code>AttributeError</code> on numpy ≥ 1.24</td><td>Pin <code>numpy&lt;1.24</code> or replace the aliases</td></tr>
+            <tr><td><code>NexusAngles.Read</code></td><td>Boolean mask dimensions mismatch when frames &gt; 3</td><td>Use <code>GetModelOutput</code> instead</td></tr>
+            <tr><td><code>NexusAngles.mean</code></td><td>Writes to a nonexistent <code>_position</code>; the result is all NaN</td><td>Call <code>np.mean</code> yourself</td></tr>
+            <tr><td><code>NexusSegment.Scale</code></td><td>Returns <code>_orientation</code></td><td>Read the internal <code>_scale</code> directly, or track it yourself</td></tr>
+            <tr><td><code>NexusSegment.mean</code></td><td>Ends in <code>pass</code> and returns <code>None</code></td><td>Do not use it</td></tr>
+            <tr><td><code>NexusSegment.__rmul__</code></td><td>A bare <code>pass</code>, returns <code>None</code></td><td>Write <code>traj * seg</code>, not <code>seg * traj</code></td></tr>
+            <tr><td><code>NexusTrajectory.SetPosition</code></td><td>Per-frame writes do not extend the array</td><td>Pass the complete array in one call</td></tr>
+            <tr><td>Padding logic in <code>Write</code></td><td>The <code>frames+1:</code> slice skips one frame</td><td>Keep the object's frame count in sync with the trial</td></tr>
+            <tr><td><code>NexusSegment.SetPosition/SetOrientation/SetScale</code></td><td>Frame index is not decremented by <code>-1</code>, unlike <code>Position</code> et al. (<strong>0-based</strong>)</td><td>Subtract 1 yourself when passing frames, or replace the whole array</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="workflow">Typical workflow</h2>
+<pre><code>from viconnexusapi import ViconNexus
+from viconnexusutils import NexusTrajectory, NexusSegment
+
+vicon = ViconNexus.ViconNexus()
+
+# 1. Read three markers
+pelvis = NexusTrajectory.NexusTrajectory('Colin'); pelvis.Read('PEL', vicon)
+lhip   = NexusTrajectory.NexusTrajectory('Colin'); lhip.Read('LHIP', vicon)
+rhip   = NexusTrajectory.NexusTrajectory('Colin'); rhip.Read('RHIP', vicon)
+
+# 2. Build the pelvis segment (origin PEL, primary axis towards LHIP, third point fixes the plane)
+seg = NexusSegment.NexusSegment('Colin')
+seg.Populate(pelvis, lhip - pelvis, rhip - pelvis)
+
+# 3. Write it back as a 9-component model output
+seg.Create('MyPelvis', vicon)
+seg.Write('MyPelvis', vicon)
+
+# 4. Save to disk (only possible from an external Python process)
+vicon.SaveTrial(30)</code></pre>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

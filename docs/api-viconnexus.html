@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ViconNexus reference · Vicon Nexus Python SDK</title>
+<meta name="description" content="Complete API reference for all 69 methods of viconnexusapi.ViconNexus.ViconNexus.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a63c9'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='white' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div>
+        <div class="title">Vicon Nexus Python SDK</div>
+        <div class="sub">API reference · v2.12</div>
+      </div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="sidebar-foot">
+      SDK 1.0.3 · utils 1.0.0<br>
+      MIT License · Windows x64
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+      <div class="crumbs"><a href="index.html">Docs</a><span class="sep">/</span><a href="api-viconnexus.html">API reference</a><span class="sep">/</span>ViconNexus</div>
+      <div class="spacer"></div>
+      <div class="search-box">
+        <span class="icon">⌕</span>
+        <input id="search-input" type="search" placeholder="Search APIs, methods, pages…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="search-results"></div>
+      </div>
+      <button class="icon-btn" id="theme-btn" aria-label="Switch theme">☾</button>
+    </header>
+
+    <div class="content-row">
+      <main>
+        <h1>ViconNexus</h1>
+        <p class="lede">
+          <code>viconnexusapi.ViconNexus.ViconNexus</code> — the SDK's main entry-point class.
+          Instantiating it connects to Nexus; you then read and write trial data through its methods.
+        </p>
+
+<pre><code>from viconnexusapi import ViconNexus
+
+vicon = ViconNexus.ViconNexus()        # host defaults to 'localhost'
+vicon.GenerateErrors = True            # default True: print the reason to stderr on failure</code></pre>
+
+        <div class="pill-row">
+          <span class="pill">69 methods (including the constructor)</span>
+          <span class="pill">45 read-only</span>
+          <span class="pill">24 write / control</span>
+        </div>
+
+        <h2 id="overview">Method groups</h2>
+        <table>
+          <thead><tr><th style="width:170px">Group</th><th>Methods</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#connection">Connection &amp; session</a></td><td><code>__init__</code> <code>Connect</code> <code>Disconnect</code> <code>IsConnected</code> <code>GetServerInfo</code></td></tr>
+            <tr><td><a href="#trial">Trials &amp; frames</a></td><td><code>GetFrameCount</code> <code>GetFrameRate</code> <code>GetTrialRange</code> <code>GetTrialRegionOfInterest</code> <code>SetTrialRegionOfInterest</code> <code>GetTrialName</code></td></tr>
+            <tr><td><a href="#subject">Subjects</a></td><td><code>GetSubjectNames</code> <code>GetSubjectInfo</code> <code>SetSubjectActive</code></td></tr>
+            <tr><td><a href="#unlabeled">Unlabeled trajectories</a></td><td><code>GetUnlabeledCount</code> <code>GetUnlabeled</code></td></tr>
+            <tr><td><a href="#trajectory">Markers &amp; trajectories</a></td><td><code>GetMarkerNames</code> <code>HasTrajectory</code> <code>GetTrajectory</code> <code>SetTrajectory</code> <code>GetTrajectoryAtFrame</code> <code>SetTrajectoryAtFrame</code></td></tr>
+            <tr><td><a href="#segment">Segments &amp; joints</a></td><td><code>GetSegmentNames</code> <code>GetRootSegment</code> <code>GetSegmentDetails</code> <code>GetJointNames</code> <code>GetJointDetails</code></td></tr>
+            <tr><td><a href="#modeloutput">Model outputs</a></td><td><code>GetModelOutputNames</code> <code>GetModelOutputDetails</code> <code>GetModelOutput</code> <code>SetModelOutput</code> <code>GetModelOutputAtFrame</code> <code>SetModelOutputAtFrame</code> <code>CreateModelOutput</code> <code>CreateModeledMarker</code></td></tr>
+            <tr><td><a href="#param">Subject / analysis parameters</a></td><td><code>GetSubjectParamNames</code> <code>GetSubjectParamDetails</code> <code>GetSubjectParam</code> <code>SetSubjectParam</code> <code>CreateSubjectParam</code> <code>GetAnalysisParamNames</code> <code>GetAnalysisParamDetails</code> <code>GetAnalysisParam</code> <code>SetAnalysisParam</code> <code>CreateAnalysisParam</code></td></tr>
+            <tr><td><a href="#event">Events</a></td><td><code>GetEvents</code> <code>CreateAnEvent</code> <code>ClearAllEvents</code></td></tr>
+            <tr><td><a href="#device">Analog devices</a></td><td><code>GetDeviceIDs</code> <code>GetDeviceNames</code> <code>GetDeviceIDFromName</code> <code>GetDeviceDetails</code> <code>GetDeviceOutputIDFromName</code> <code>GetDeviceOutputDetails</code> <code>GetDeviceChannelIDFromName</code></td></tr>
+            <tr><td><a href="#channel">Device channel data</a></td><td><code>GetDeviceChannel</code> <code>GetDeviceChannelAtFrame</code> <code>GetDeviceChannelForFrame</code> <code>GetDeviceChannelGlobal</code> <code>GetDeviceChannelGlobalAtFrame</code> <code>GetDeviceChannelGlobalForFrame</code> <code>SetDeviceChannel</code> <code>SetDeviceChannelAtFrame</code></td></tr>
+            <tr><td><a href="#spline">Spline</a></td><td><code>SubmitSplineTrajectory</code> <code>GetSplineResults</code></td></tr>
+            <tr><td><a href="#trialops">Trial operations</a></td><td><code>OpenTrial</code> <code>SaveTrial</code> <code>CloseTrial</code> <code>RunPipeline</code></td></tr>
+            <tr><td><a href="#errors">Exceptions &amp; switches</a></td><td><code>ViconNexusException</code> <code>GenerateErrors</code> <code>Client</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="connection">Connection &amp; session</h2>
+
+        <article class="api-item" id="__init__">
+          <h3>__init__<span class="sig">(host='localhost')</span><span class="kind">Control</span></h3>
+          <p class="desc">Constructor. Creates the underlying <code>ViconNexusClient</code> and immediately attempts to connect to the host application.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>host</code></td><td>str</td><td>Hostname or IP address of the machine running Nexus; defaults to localhost.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> the instance. <strong>Raises</strong> <code>IOError("Unable to connect to Nexus")</code> if the connection fails. <strong>Side effect</strong> sets <code>self.GenerateErrors = True</code>.</p>
+<pre><code>vicon = ViconNexus.ViconNexus()
+# On connection failure:
+# IOError: Unable to connect to Nexus</code></pre>
+        </article>
+
+        <article class="api-item" id="Connect">
+          <h3>Connect<span class="sig">(host='localhost')</span><span class="kind">Control</span></h3>
+          <p class="desc">Reconnects if not currently connected; does nothing when already connected. Use it to recover from a transient network drop without rebuilding the object.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>host</code></td><td>str</td><td>Host to connect to; only used while disconnected.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>None</code>. <strong>Raises</strong> <code>IOError</code> if reconnection fails.</p>
+<pre><code>if not vicon.IsConnected():
+    vicon.Connect()</code></pre>
+        </article>
+
+        <article class="api-item" id="Disconnect">
+          <h3>Disconnect<span class="sig">()</span><span class="kind">Control</span></h3>
+          <p class="desc">Disconnects from the host application. A no-op when already disconnected.</p>
+<pre><code>vicon.Disconnect()</code></pre>
+        </article>
+
+        <article class="api-item" id="IsConnected">
+          <h3>IsConnected<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Queries whether the connection to the host is currently alive.</p>
+          <p class="ret"><strong>Returns</strong> <code>bool</code>.</p>
+<pre><code>vicon.IsConnected()   # True / False</code></pre>
+        </article>
+
+        <article class="api-item" id="GetServerInfo">
+          <h3>GetServerInfo<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Returns version information for the connected server (host), useful for checking that the SDK and Nexus versions match.</p>
+          <p class="ret"><strong>Returns</strong> <code>(program, major, minor, point, release_type)</code> —
+            <code>program</code> is the program name (str), <code>major</code>/<code>minor</code>/<code>point</code> are int version numbers,
+            and <code>release_type</code> is a release-type string (str).</p>
+<pre><code>program, major, minor, point, rel = vicon.GetServerInfo()
+if (major, minor) != (2, 12):
+    print('Version mismatch:', program, major, minor, point, rel)</code></pre>
+        </article>
+
+        <h2 id="trial">Trial &amp; frames</h2>
+
+        <article class="api-item" id="GetFrameCount">
+          <h3>GetFrameCount<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Total number of frames in the loaded trial.</p>
+          <p class="ret"><strong>Returns</strong> <code>int</code>.</p>
+<pre><code>n = vicon.GetFrameCount()</code></pre>
+        </article>
+
+        <article class="api-item" id="GetFrameRate">
+          <h3>GetFrameRate<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Base (optical) sampling rate of the trial.</p>
+          <p class="ret"><strong>Returns</strong> <code>float</code>, in Hz.</p>
+<pre><code>rate = vicon.GetFrameRate()      # e.g. 100.0</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialRange">
+          <h3>GetTrialRange<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Updatable frame range of the trial (the first and last frames that can be written safely). Use it to bound loops before bulk writes.</p>
+          <p class="ret"><strong>Returns</strong> <code>(start_frame, end_frame)</code> — two <code>int</code> values; frame numbers are 1-based.</p>
+<pre><code>start, end = vicon.GetTrialRange()
+for frame in range(start, end + 1):
+    pass</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialRegionOfInterest">
+          <h3>GetTrialRegionOfInterest<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">First and last frames of the region of interest (ROI) set by the user in Nexus.</p>
+          <p class="ret"><strong>Returns</strong> <code>(start_frame, end_frame)</code> — two <code>int</code> values.</p>
+        </article>
+
+        <article class="api-item" id="SetTrialRegionOfInterest">
+          <h3>SetTrialRegionOfInterest<span class="sig">(startFrame, EndFrame)</span><span class="kind">Write</span></h3>
+          <p class="desc">Sets the first and last frames of the user ROI. Note that the second parameter is capitalized as <code>EndFrame</code> in the source, so keyword calls must match that casing.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>startFrame</code></td><td>int</td><td>First frame of the range (inclusive), 1-based.</td></tr>
+              <tr><td><code>EndFrame</code></td><td>int</td><td>Last frame of the range (inclusive).</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.SetTrialRegionOfInterest(10, 250)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrialName">
+          <h3>GetTrialName<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Name of the current trial and the directory containing it.</p>
+          <p class="ret"><strong>Returns</strong> <code>(path, name)</code> — <code>path</code> is the on-disk directory (without the filename), and <code>name</code> is the trial name.</p>
+<pre><code>path, name = vicon.GetTrialName()
+out_file = path + '\\' + name + '.MyOutput.csv'</code></pre>
+        </article>
+        <h2 id="subject">Subjects</h2>
+
+        <article class="api-item" id="GetSubjectNames">
+          <h3>GetSubjectNames<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Names of all currently loaded subjects.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>, possibly an empty list (when the trial has no subjects).</p>
+<pre><code>for subject in vicon.GetSubjectNames():
+    print(subject)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSubjectInfo">
+          <h3>GetSubjectInfo<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Gets subject names, model templates and active states in one call.</p>
+          <p class="ret"><strong>Returns</strong> <code>(names, templates, active)</code> — three equally long lists:
+            <code>names</code>/<code>templates</code> are <code>list[str]</code>, and <code>active</code> is <code>list[bool]</code>.</p>
+<pre><code>for name, tpl, is_active in zip(*vicon.GetSubjectInfo()):
+    print('{0} / template {1} / active {2}'.format(name, tpl, is_active))</code></pre>
+        </article>
+
+        <article class="api-item" id="SetSubjectActive">
+          <h3>SetSubjectActive<span class="sig">(subjectName, activeState)</span><span class="kind">Write</span></h3>
+          <p class="desc">Sets a subject's active state by name; <code>'Exclusive'</code> activates only that subject and deactivates all others.</p>
+          <table>
+            <thead><tr><th style="width:120px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subjectName</code></td><td>str</td><td>Name of an existing subject.</td></tr>
+              <tr><td><code>activeState</code></td><td>bool / int / str</td><td><code>True/False</code>, <code>1/0</code>, or the strings <code>'1'</code>/<code>'0'</code>/<code>'Exclusive'</code>. Any other type raises <code>TypeError</code>.</td></tr>
+            </tbody>
+          </table>
+<pre><code>subjects = vicon.GetSubjectNames()
+for s in subjects:
+    vicon.SetSubjectActive(s, True)         # activate all
+vicon.SetSubjectActive(subjects[0], 'Exclusive')   # keep only the first</code></pre>
+        </article>
+
+        <h2 id="unlabeled">Unlabeled trajectories</h2>
+
+        <p>
+          Unlabeled trajectories are point clusters that have been reconstructed but not yet assigned to a subject marker.
+          Their indices and ordering are determined by Nexus and are not stable across trials — do not cache indices between loads.
+        </p>
+
+        <article class="api-item" id="GetUnlabeledCount">
+          <h3>GetUnlabeledCount<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">Number of unlabeled trajectories.</p>
+          <p class="ret"><strong>Returns</strong> <code>int</code>.</p>
+<pre><code>n = vicon.GetUnlabeledCount()</code></pre>
+        </article>
+
+        <article class="api-item" id="GetUnlabeled">
+          <h3>GetUnlabeled<span class="sig">(index)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads every frame of one unlabeled trajectory by index.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>index</code></td><td>int</td><td>Trajectory index in the range <code>0 … GetUnlabeledCount()-1</code>.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(x, y, z, e)</code> — three <code>list[float]</code> values (mm) and one <code>list[bool]</code>.</p>
+<pre><code>x, y, z, e = vicon.GetUnlabeled(0)
+if e[49]:
+    print('Frame 50:', x[49], y[49], z[49])</code></pre>
+        </article>
+
+        <h2 id="trajectory">Markers &amp; trajectories</h2>
+
+        <p>
+          Trajectory data always comes as four equally long lists: <code>x / y / z</code> are coordinates (in mm),
+          and <code>e</code> records whether valid data exists at that frame. The list length equals <code>GetFrameCount()</code>.
+        </p>
+
+        <article class="api-item" id="GetMarkerNames">
+          <h3>GetMarkerNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">List of marker names defined on the subject (including markers with no captured data).</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>subject</code></td><td>str</td><td>Name of an existing subject.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+<pre><code>markers = vicon.GetMarkerNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="HasTrajectory">
+          <h3>HasTrajectory<span class="sig">(subject, marker)</span><span class="kind">Read</span></h3>
+          <p class="desc">Checks whether the marker has associated trajectory data (a marker can exist with no trajectory at all).</p>
+          <p class="ret"><strong>Returns</strong> <code>bool</code>.</p>
+<pre><code>if vicon.HasTrajectory('Colin', 'C7'):
+    print(vicon.GetTrajectory('Colin', 'C7')[0][0])</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrajectory">
+          <h3>GetTrajectory<span class="sig">(subject, marker)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads trajectory data for every frame of the specified marker.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>Subject name.</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>Marker name.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(x, y, z, e)</code> — three <code>list[float]</code> values and one <code>list[bool]</code>; length = frame count.</p>
+<pre><code>x, y, z, e = vicon.GetTrajectory('Colin', 'C7')
+exists_count = sum(e)
+print('Valid frames:', exists_count, '/', len(e))</code></pre>
+        </article>
+
+        <article class="api-item" id="SetTrajectory">
+          <h3>SetTrajectory<span class="sig">(subject, marker, x, y, z, e)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes trajectory data for every frame of the specified marker.</p>
+          <p class="desc">
+            If any of <code>x/y/z</code> is <code>NaN</code> for a frame, the SDK zeroes that frame's coordinates and sets <code>e[i]</code>
+            to <code>False</code> before writing (i.e. it automatically "fills gaps" in the transport layer), so the lists you pass in are modified in place.
+          </p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:180px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>Subject name.</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>Marker name.</td></tr>
+              <tr><td><code>x</code>, <code>y</code>, <code>z</code></td><td>list[float]</td><td>Coordinates (mm); length must equal the frame count.</td></tr>
+              <tr><td><code>e</code></td><td>list[bool]</td><td>Per-frame existence flag; <code>False</code> means no data at that frame (a gap).</td></tr>
+            </tbody>
+          </table>
+<pre><code>frames = vicon.GetFrameCount()
+vicon.SetTrajectory('Colin', 'C7', [0.0] * frames, [0.0] * frames,
+                    [0.0] * frames, [True] * frames)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetTrajectoryAtFrame">
+          <h3>GetTrajectoryAtFrame<span class="sig">(subject, marker, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads one frame of trajectory data (cheaper in memory than reading the whole trajectory when looping frame by frame, but it incurs more round trips).</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>Subject name.</td></tr>
+              <tr><td><code>marker</code></td><td>str</td><td>Marker name.</td></tr>
+              <tr><td><code>frame</code></td><td>int</td><td>Frame number as shown on the application time bar, 1-based.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(x, y, z, e)</code> — three <code>float</code> values and one <code>bool</code>.</p>
+<pre><code>x, y, z, e = vicon.GetTrajectoryAtFrame('Colin', 'C7', 50)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetTrajectoryAtFrame">
+          <h3>SetTrajectoryAtFrame<span class="sig">(subject, marker, frame, x, y, z, e)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes a single frame of trajectory data. If any coordinate is <code>NaN</code>, <code>e=False</code> is set automatically and the coordinates are zeroed.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>frame</code></td><td>int</td><td>Frame number, 1-based.</td></tr>
+              <tr><td><code>x</code>, <code>y</code>, <code>z</code></td><td>float</td><td>Coordinates (mm).</td></tr>
+              <tr><td><code>e</code></td><td>bool</td><td>Whether data exists at this frame.</td></tr>
+            </tbody>
+          </table>
+<pre><code># Create a gap at frame 50
+vicon.SetTrajectoryAtFrame('Colin', 'C7', 50, 0.0, 0.0, 0.0, False)
+
+# When filling frame by frame, watch performance: use SetTrajectory for large batches
+for frame in range(start, end + 1):
+    vicon.SetTrajectoryAtFrame('Colin', 'C7', frame, x, y, z, True)</code></pre>
+        </article>
+        <h2 id="segment">Segments &amp; joints</h2>
+
+        <p>
+          Segments make up the subject's hierarchical skeleton; the root segment's parent is named <code>'World'</code>.
+          A joint connects two adjacent segments. This part of the API is read-only; to write the skeleton, use
+          <a href="#modeloutput">model outputs</a> (for example the Plug-in Gait Bones group).
+        </p>
+
+        <article class="api-item" id="GetSegmentNames">
+          <h3>GetSegmentNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">List of the subject's segment names.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+<pre><code>segments = vicon.GetSegmentNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetRootSegment">
+          <h3>GetRootSegment<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">Returns the name of the root segment (usually the pelvis).</p>
+          <p class="ret"><strong>Returns</strong> <code>str</code>.</p>
+<pre><code>root = vicon.GetRootSegment('Colin')
+parent, children, markers = vicon.GetSegmentDetails('Colin', root)
+print('Root segment parent:', parent)     # 'World'</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSegmentDetails">
+          <h3>GetSegmentDetails<span class="sig">(subject, segment)</span><span class="kind">Read</span></h3>
+          <p class="desc">Hierarchy and association information for a segment.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>Subject name.</td></tr>
+              <tr><td><code>segment</code></td><td>str</td><td>Name of an existing segment on this subject.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(parent, children, markers)</code> —
+            <code>parent</code> is the parent segment name (the root segment's parent is <code>'World'</code>),
+            <code>children</code> is a <code>list[str]</code> of child segment names,
+            and <code>markers</code> is a <code>list[str]</code> of marker names associated with the segment.</p>
+<pre><code>parent, children, markers = vicon.GetSegmentDetails('Colin', 'LHip')
+for child in children:
+    print(child)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetJointNames">
+          <h3>GetJointNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">List of the subject's joint names.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+        </article>
+
+        <article class="api-item" id="GetJointDetails">
+          <h3>GetJointDetails<span class="sig">(subject, joint)</span><span class="kind">Read</span></h3>
+          <p class="desc">Names of the segments on either side of a joint.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>subject</code></td><td>str</td><td>Subject name.</td></tr>
+              <tr><td><code>joint</code></td><td>str</td><td>Name of an existing joint on this subject.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(parent, child)</code> — two <code>str</code> values.</p>
+<pre><code>joints = vicon.GetJointNames('Colin')
+parent, child = vicon.GetJointDetails('Colin', joints[0])
+print('{0}: {1} - {2}'.format(joints[0], parent, child))</code></pre>
+        </article>
+
+        <h2 id="modeloutput">Model outputs</h2>
+
+        <p>
+          Model outputs are the general-purpose containers for "computed results" in Nexus: angles, forces, moments, power,
+          Plug-in Gait bones and modeled markers are all model outputs. Each output has a group name
+          (such as <code>Angles</code>, <code>Forces</code>, <code>Plug-in Gait Bones</code>, <code>Modeled Markers</code>),
+          plus a number of "components", each of which carries a quantity type.
+        </p>
+
+        <table>
+          <thead><tr><th style="width:240px">Valid quantity types (Quantity Type)</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>Length</code> <code>Mass</code> <code>Angle</code> <code>Acceleration</code>
+                  <code>Angular Acceleration</code> <code>Angular Velocity</code> <code>Frequency</code>
+                  <code>Force</code> <code>ForceNormalized</code> <code>Torque</code> <code>TorqueNormalized</code>
+                  <code>Power</code> <code>PowerNormalized</code> <code>Pressure</code>
+                  <code>Electric Potential</code> <code>Velocity</code></td>
+              <td>Case-sensitive; passing any other string fails (the error is printed to stderr).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="GetModelOutputNames">
+          <h3>GetModelOutputNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">Names of all model outputs for the subject.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+<pre><code>outputs = vicon.GetModelOutputNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutputDetails">
+          <h3>GetModelOutputDetails<span class="sig">(subject, modelOutputName)</span><span class="kind">Read</span></h3>
+          <p class="desc">The model output's group, component names and the quantity type of each component; useful for creating a new output with the same structure.</p>
+          <p class="ret"><strong>Returns</strong> <code>(group, components, types)</code> —
+            <code>group</code> is the group name (str), and <code>components</code> and <code>types</code> are equally long <code>list[str]</code> values.</p>
+<pre><code>group, comps, types = vicon.GetModelOutputDetails('Colin', 'LeftHipAngle')
+vicon.CreateModelOutput('Colin', 'MyCopy', group, comps, types)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutput">
+          <h3>GetModelOutput<span class="sig">(subject, modelOutputName)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads data for every frame of a model output.</p>
+          <p class="ret"><strong>Returns</strong> <code>(components, e)</code> —
+            <code>components</code> is an <code>N×M</code> nested list (N = number of components, M = frame count),
+            and <code>e</code> is a <code>list[bool]</code> of length M giving per-frame existence.
+            Values for missing frames are not guaranteed to be meaningful; filter with <code>e</code> first.</p>
+<pre><code>data, exists = vicon.GetModelOutput('Colin', 'LeftHipAngle')
+n_components = len(data)        # e.g. 3 (X/Y/Z)
+n_frames = len(data[0])         # equals GetFrameCount()
+# value of component 2 at frame 50
+print(data[1][49], exists[49])</code></pre>
+        </article>
+
+        <article class="api-item" id="SetModelOutput">
+          <h3>SetModelOutput<span class="sig">(subject, modelOutputName, components, e)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes data for every frame of a model output.</p>
+          <p class="desc">
+            Internally it replaces <code>NaN</code> with 0 and sets the corresponding frame's <code>exists</code> to <code>False</code>;
+            it also performs a compatibility conversion from <code>numpy.bool_</code> to <code>bool</code>, so passing numpy arrays is safe.
+          </p>
+          <table>
+            <thead><tr><th style="width:120px">Parameter</th><th style="width:170px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>components</code></td><td>list[list[float]]</td><td>An <code>N×M</code> matrix: rows are components, columns are frames.</td></tr>
+              <tr><td><code>e</code></td><td>list[bool]</td><td>Per-frame existence of length M.</td></tr>
+            </tbody>
+          </table>
+<pre><code>data, exists = vicon.GetModelOutput('Colin', 'LeftHipAngle')
+vicon.SetModelOutput('Colin', 'MyCopy', data, exists)
+
+# Zero everything
+frames = vicon.GetFrameCount()
+vicon.SetModelOutput('Colin', 'MyCopy', [[0.0] * frames for _ in range(3)],
+                     [True] * frames)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetModelOutputAtFrame">
+          <h3>GetModelOutputAtFrame<span class="sig">(subject, modelOutputName, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads the component values of a model output for a single frame.</p>
+          <p class="ret"><strong>Returns</strong> <code>(components, e)</code> —
+            <code>components</code> is a <code>list[float]</code> of length N, and <code>e</code> is a <code>bool</code>.</p>
+<pre><code>comps, ok = vicon.GetModelOutputAtFrame('Colin', 'LeftHipAngle', 50)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetModelOutputAtFrame">
+          <h3>SetModelOutputAtFrame<span class="sig">(subject, modelOutputName, frame, components, e)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes a single frame of a model output. If any component is <code>NaN</code>, the whole frame is marked as non-existent and the components are zeroed.</p>
+          <table>
+            <thead><tr><th style="width:120px">Parameter</th><th style="width:170px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>frame</code></td><td>int</td><td>Frame number, 1-based.</td></tr>
+              <tr><td><code>components</code></td><td>list[float]</td><td>Length must equal the number of components in this output.</td></tr>
+              <tr><td><code>e</code></td><td>bool</td><td>Whether data exists at this frame.</td></tr>
+            </tbody>
+          </table>
+<pre><code>comps, ok = vicon.GetModelOutputAtFrame('Colin', 'LeftHipAngle', 50)
+comps = [c + 100.0 for c in comps]
+vicon.SetModelOutputAtFrame('Colin', 'LeftHipAngle', 50, comps, True)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateModelOutput">
+          <h3>CreateModelOutput<span class="sig">(subject, modelOutputName, groupName, componentNames, QuantityTypes)</span><span class="kind">Write</span></h3>
+          <p class="desc">Creates a new model output (with no data yet); then fill it with <code>SetModelOutput</code> /
+            <code>SetModelOutputAtFrame</code>. The name must be unique within the subject.</p>
+          <table>
+            <thead><tr><th style="width:150px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>groupName</code></td><td>str</td><td>Group name; determines placement in the Nexus tree and may be customized.</td></tr>
+              <tr><td><code>componentNames</code></td><td>list[str]</td><td>Component names; their count is the number of components.</td></tr>
+              <tr><td><code>QuantityTypes</code></td><td>list[str]</td><td>Quantity type of each component (see the table above); length must match the component count.</td></tr>
+            </tbody>
+          </table>
+<pre><code>names = ['RX', 'RY', 'RZ', 'TX', 'TY', 'TZ', 'SX', 'SY', 'SZ']
+types = ['Angle', 'Angle', 'Angle',
+         'Length', 'Length', 'Length',
+         'Length', 'Length', 'Length']
+vicon.CreateModelOutput('Colin', 'HED', 'Plug-in Gait Bones', names, types)</code></pre>
+          <div class="note">
+            <b>Complete Gait output</b>
+            To create the full set of Plug-in Gait outputs in one call, use
+            <a href="api-viconutils.html#CreateViconGaitModelOutputs"><code>ViconUtils.CreateViconGaitModelOutputs</code></a> directly.
+          </div>
+        </article>
+
+        <article class="api-item" id="CreateModeledMarker">
+          <h3>CreateModeledMarker<span class="sig">(subject, modelOutputName)</span><span class="kind">Write</span></h3>
+          <p class="desc">Creates a "modeled marker": essentially a model output with group <code>Modeled Markers</code>,
+            components <code>X/Y/Z</code> and quantity type <code>Length</code>.
+            It is displayed in the workspace in 3D and can be read like a point; commonly used for midpoints, virtual markers and geometrically derived points.</p>
+          <p class="ret"><strong>Returns</strong> <code>None</code>. Then use <code>GetModelOutput</code> to fetch the <code>N×M</code> data and write it back.</p>
+<pre><code>vicon.CreateModeledMarker('Colin', 'MyMidpoint')
+
+ax, ay, az, ae = vicon.GetTrajectory('Colin', 'RKNE')
+bx, by, bz, be = vicon.GetTrajectory('Colin', 'RANK')
+
+data, exists = vicon.GetModelOutput('Colin', 'MyMidpoint')
+for i in range(vicon.GetFrameCount()):
+    if ae[i] and be[i]:
+        exists[i] = True
+        data[0][i] = (ax[i] + bx[i]) / 2.0
+        data[1][i] = (ay[i] + by[i]) / 2.0
+        data[2][i] = (az[i] + bz[i]) / 2.0
+    else:
+        exists[i] = False
+vicon.SetModelOutput('Colin', 'MyMidpoint', data, exists)</code></pre>
+        </article>
+        <h2 id="param">Subject &amp; analysis parameters</h2>
+
+        <p>
+          Nexus has two kinds of "scalar parameter", both attached to a subject:
+        </p>
+        <ul>
+          <li><strong>Subject parameters</strong> (subject parameter): static values such as height, weight and leg length. They have a unit, a default value and a "required" flag.</li>
+          <li><strong>Analysis parameters</strong> (analysis parameter): values produced during analysis; readable and writable at any time.</li>
+        </ul>
+
+        <h3 id="subject-params">Subject parameters</h3>
+
+        <article class="api-item" id="GetSubjectParamNames">
+          <h3>GetSubjectParamNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">Names of all static parameters for the subject.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+<pre><code>params = vicon.GetSubjectParamNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSubjectParamDetails">
+          <h3>GetSubjectParamDetails<span class="sig">(subject, param)</span><span class="kind">Read</span></h3>
+          <p class="desc">Gets a parameter's current value, unit, default value, required flag and has-value flag in one call.</p>
+          <p class="ret"><strong>Returns a 5-tuple</strong> <code>(value, unit, default, required, hasvalue)</code> —
+            <code>value</code>/<code>default</code> are <code>float</code>, <code>unit</code> is <code>str</code>,
+            and <code>required</code>/<code>hasvalue</code> are <code>bool</code>.</p>
+<pre><code>value, unit, default, required, hasvalue = \
+    vicon.GetSubjectParamDetails('Colin', 'Height')
+print('{0} [{1}] default {2}  required={3} has value={4}'.format(
+    value, unit, default, required, hasvalue))</code></pre>
+          <div class="warn">
+            <b>Incorrect docstring</b>
+            The source docstring example for <code>GetSubjectParamDetails</code> unpacks only 4 variables,
+            but it actually returns <strong>5</strong>. Use the code above as the reference.
+          </div>
+        </article>
+
+        <article class="api-item" id="GetSubjectParam">
+          <h3>GetSubjectParam<span class="sig">(subject, param)</span><span class="kind">Read</span></h3>
+          <p class="desc">Gets only the parameter value and the "has value" flag.</p>
+          <p class="ret"><strong>Returns</strong> <code>(value, hasvalue)</code> — a <code>float</code> and a <code>bool</code>.</p>
+<pre><code>value, hasvalue = vicon.GetSubjectParam('Colin', 'Height')</code></pre>
+        </article>
+
+        <article class="api-item" id="SetSubjectParam">
+          <h3>SetSubjectParam<span class="sig">(subject, param, value, bForce=False)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes a parameter value. <code>bForce=True</code> forces the write (used to override restrictions such as required parameters).</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:120px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>value</code></td><td>float</td><td>New value.</td></tr>
+              <tr><td><code>bForce</code></td><td>bool</td><td>Whether to force the write; defaults to <code>False</code>.</td></tr>
+            </tbody>
+          </table>
+<pre><code>value, _ = vicon.GetSubjectParam('Colin', 'Height')
+vicon.SetSubjectParam('Colin', 'Height', value * 1.01, True)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateSubjectParam">
+          <h3>CreateSubjectParam<span class="sig">(subject, param, value, unit, default, required)</span><span class="kind">Write</span></h3>
+          <p class="desc">Creates a static parameter; the name must be unique within the subject.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:120px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>value</code></td><td>float</td><td>Initial value.</td></tr>
+              <tr><td><code>unit</code></td><td>str</td><td>Unit. <strong>Only</strong> <code>'none'</code>, <code>'mm'</code>, <code>'deg'</code>, <code>'kg'</code> and <code>'s'</code> are supported.</td></tr>
+              <tr><td><code>default</code></td><td>float</td><td>Default value.</td></tr>
+              <tr><td><code>required</code></td><td>bool</td><td>Whether the parameter is required.</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.CreateSubjectParam('Colin', 'MyParam', 1.23, 'mm', 0.0, False)</code></pre>
+        </article>
+
+        <h3 id="analysis-params">Analysis parameters</h3>
+
+        <article class="api-item" id="GetAnalysisParamNames">
+          <h3>GetAnalysisParamNames<span class="sig">(subject)</span><span class="kind">Read</span></h3>
+          <p class="desc">Names of all analysis parameters for the subject.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+<pre><code>params = vicon.GetAnalysisParamNames('Colin')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetAnalysisParamDetails">
+          <h3>GetAnalysisParamDetails<span class="sig">(subject, param)</span><span class="kind">Read</span></h3>
+          <p class="desc">The parameter's current value, unit and "has value" flag.</p>
+          <p class="ret"><strong>Returns a 3-tuple</strong> <code>(value, unit, hasvalue)</code> —
+            <code>float</code>, <code>str</code>, <code>bool</code>.</p>
+<pre><code>value, unit, hasvalue = vicon.GetAnalysisParamDetails('Colin', 'MyParam')</code></pre>
+          <div class="warn">
+            <b>Incorrect docstring</b>
+            The source example reads <code>value, unit, default, required = ...</code> (4 values),
+            but it actually returns only <strong>3</strong>.
+          </div>
+        </article>
+
+        <article class="api-item" id="GetAnalysisParam">
+          <h3>GetAnalysisParam<span class="sig">(subject, param)</span><span class="kind">Read</span></h3>
+          <p class="desc">Gets only the value and the flag.</p>
+          <p class="ret"><strong>Returns</strong> <code>(value, hasvalue)</code>.</p>
+<pre><code>value, hasvalue = vicon.GetAnalysisParam('Colin', 'MyParam')</code></pre>
+        </article>
+
+        <article class="api-item" id="SetAnalysisParam">
+          <h3>SetAnalysisParam<span class="sig">(subject, param, value)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes an analysis parameter value.</p>
+<pre><code>value, _ = vicon.GetAnalysisParam('Colin', 'MyParam')
+vicon.SetAnalysisParam('Colin', 'MyParam', value * -1)</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateAnalysisParam">
+          <h3>CreateAnalysisParam<span class="sig">(subject, param, value, unit)</span><span class="kind">Write</span></h3>
+          <p class="desc">Creates an analysis parameter; the name must be unique within the subject.</p>
+<pre><code>vicon.CreateAnalysisParam('Colin', 'MyParam', 1.23, 'mm')</code></pre>
+        </article>
+
+        <h2 id="event">Events</h2>
+
+        <p>
+          Events are annotations of "frame number + intra-frame offset", such as foot strike/foot off. They are located by a triple:
+          subject + context + event type.
+        </p>
+
+        <table>
+          <thead><tr><th style="width:130px">Field</th><th>Valid values (case-sensitive)</th></tr></thead>
+          <tbody>
+            <tr><td>context</td><td><code>Left</code>, <code>Right</code>, <code>General</code></td></tr>
+            <tr><td>event</td><td><code>Foot Strike</code>, <code>Foot Off</code>, <code>General</code></td></tr>
+            <tr><td>offset</td><td>Intra-frame offset (seconds), range <code>0.0 … 1/FrameRate</code></td></tr>
+          </tbody>
+        </table>
+
+        <article class="api-item" id="GetEvents">
+          <h3>GetEvents<span class="sig">(subject, context, event)</span><span class="kind">Read</span></h3>
+          <p class="desc">Queries all events matching the specified subject, context and event type.</p>
+          <p class="ret"><strong>Returns</strong> <code>(frames, offsets)</code> —
+            <code>list[int]</code> and <code>list[float]</code>, equally long; two empty lists when nothing matches.</p>
+<pre><code>frames, offsets = vicon.GetEvents('Colin', 'Left', 'Foot Strike')
+for f, off in zip(frames, offsets):
+    print('Frame {0} + {1:.4f}s'.format(f, off))</code></pre>
+        </article>
+
+        <article class="api-item" id="CreateAnEvent">
+          <h3>CreateAnEvent<span class="sig">(subject, context, event, frame, offset)</span><span class="kind">Write</span></h3>
+          <p class="desc">Creates an event at <code>frame + offset</code>.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:120px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>context</code></td><td>str</td><td><code>Left</code> / <code>Right</code> / <code>General</code>.</td></tr>
+              <tr><td><code>event</code></td><td>str</td><td><code>Foot Strike</code> / <code>Foot Off</code> / <code>General</code>.</td></tr>
+              <tr><td><code>frame</code></td><td>int</td><td>Frame number, 1-based.</td></tr>
+              <tr><td><code>offset</code></td><td>float</td><td>Intra-frame offset in seconds, typically <code>&lt; 1/FrameRate</code>.</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.ClearAllEvents()
+vicon.CreateAnEvent('Colin', 'Left', 'Foot Strike', 137, 0.0)
+vicon.CreateAnEvent('Colin', 'Left', 'Foot Off', 190, 0.006)</code></pre>
+          <div class="note">
+            <b>Parameter-order trap</b>
+            The source docstring example swaps context and event
+            (<code>vicon.CreateAnEvent('Patricia', 'Foot Strike', 'Left', ...)</code>).
+            The correct order is <strong>subject, context, event</strong>; see the code above.
+          </div>
+        </article>
+
+        <article class="api-item" id="ClearAllEvents">
+          <h3>ClearAllEvents<span class="sig">()</span><span class="kind">Write</span></h3>
+          <p class="desc">Deletes all events in the current trial (all subjects, all contexts). This cannot be undone, and it does not affect older files already saved to disk.</p>
+<pre><code>vicon.ClearAllEvents()</code></pre>
+        </article>
+        <h2 id="device">Analog devices</h2>
+
+        <p>
+          Force plates, eye trackers and analog capture cards are all called <strong>device</strong> in the SDK. The hierarchy has three levels:
+        </p>
+<pre><code>DeviceID  ──▶  DeviceOutputID  ──▶  ChannelID
+(one force plate)    (Force / CoP / Moment)   (Fx / Fy / Fz …)</code></pre>
+        <p>
+          Communication always uses IDs; names are optional convenience labels and are <strong>case-sensitive</strong>.
+          A device's sampling rate may differ from the trial frame rate: if the device is faster, one frame corresponds to multiple samples, with samples ordered
+          <code>frame1[s1], frame1[s2], … frameN[sN]</code>.
+        </p>
+
+        <article class="api-item" id="GetDeviceIDs">
+          <h3>GetDeviceIDs<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">List of IDs of all analog devices in the trial.</p>
+          <p class="ret"><strong>Returns</strong> <code>list[int]</code> (unsigned integers).</p>
+<pre><code>for device_id in vicon.GetDeviceIDs():
+    print(device_id, vicon.GetDeviceDetails(device_id)[:3])</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceNames">
+          <h3>GetDeviceNames<span class="sig">()</span><span class="kind">Read</span></h3>
+          <p class="desc">List of names of devices that have names (unnamed devices are not included).</p>
+          <p class="ret"><strong>Returns</strong> <code>list[str]</code>.</p>
+        </article>
+
+        <article class="api-item" id="GetDeviceIDFromName">
+          <h3>GetDeviceIDFromName<span class="sig">(name)</span><span class="kind">Read</span></h3>
+          <p class="desc">Looks up a device ID by device name.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>name</code></td><td>str</td><td>Name of a named device; case-sensitive.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> the device ID (integer). If the name does not exist, returns 0/an invalid value and does not raise.</p>
+<pre><code>plate_id = vicon.GetDeviceIDFromName('MyForcePlate')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceDetails">
+          <h3>GetDeviceDetails<span class="sig">(deviceID)</span><span class="kind">Read</span></h3>
+          <p class="desc">Device-level information, plus geometry and pose data for force plates and eye trackers.</p>
+          <p class="ret"><strong>Returns a 6-tuple</strong>
+            <code>(name, device_type, rate, deviceOutputIDs, forceplate, eyetracker)</code>:</p>
+          <table>
+            <thead><tr><th style="width:150px">Element</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>name</code></td><td>str</td><td>Device name; may be an empty string.</td></tr>
+              <tr><td><code>device_type</code></td><td>str</td><td><code>'ForcePlate'</code> / <code>'EyeTracker'</code> / <code>'Other'</code>.</td></tr>
+              <tr><td><code>rate</code></td><td>float</td><td>Device sampling rate (Hz).</td></tr>
+              <tr><td><code>deviceOutputIDs</code></td><td>list[int]</td><td>List of output IDs for this device.</td></tr>
+              <tr><td><code>forceplate</code></td><td><a href="api-datatypes.html#NexusForcePlate">NexusForcePlate</a></td><td>Always returned; only meaningful for force plates.</td></tr>
+              <tr><td><code>eyetracker</code></td><td><a href="api-datatypes.html#NexusEyeTracker">NexusEyeTracker</a></td><td>Always returned; only meaningful for eye trackers.</td></tr>
+            </tbody>
+          </table>
+<pre><code>name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(1)
+if dtype == 'ForcePlate':
+    print('Plate center X:', (plate.UpperBounds[0] + plate.LowerBounds[0]) / 2.0)
+    print('World-coordinate translation:', plate.WorldT)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceOutputIDFromName">
+          <h3>GetDeviceOutputIDFromName<span class="sig">(deviceID, name)</span><span class="kind">Read</span></h3>
+          <p class="desc">Looks up an output ID by output name on the specified device. Common force-plate output names: <code>'Force'</code>, <code>'CoP'</code>, <code>'Moment'</code>.</p>
+          <p class="ret"><strong>Returns</strong> the output ID (integer).</p>
+<pre><code>force_out = vicon.GetDeviceOutputIDFromName(plate_id, 'Force')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceOutputDetails">
+          <h3>GetDeviceOutputDetails<span class="sig">(deviceID, deviceOutputID)</span><span class="kind">Read</span></h3>
+          <p class="desc">Output-level information: name, type, unit, readiness, channel names and channel IDs.</p>
+          <p class="ret"><strong>Returns a 6-tuple</strong>
+            <code>(name, output_type, unit, ready, channelNames, channelIDs)</code> —
+            <code>ready</code> is <code>bool</code>, <code>channelNames</code> is <code>list[str]</code>,
+            and <code>channelIDs</code> is <code>list[int]</code>.</p>
+<pre><code>name, otype, unit, ready, ch_names, ch_ids = \
+    vicon.GetDeviceOutputDetails(plate_id, force_out)
+if not ready:
+    print('Output not ready; data is unavailable')</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelIDFromName">
+          <h3>GetDeviceChannelIDFromName<span class="sig">(deviceID, deviceOutputID, name)</span><span class="kind">Read</span></h3>
+          <p class="desc">Looks up a channel ID by channel name on the specified output. Common channels on a force plate's Force output: <code>'Fx'</code>, <code>'Fy'</code>, <code>'Fz'</code>; on the CoP output: <code>'Cx'</code>, <code>'Cy'</code>, <code>'Cz'</code>.</p>
+          <p class="ret"><strong>Returns</strong> the channel ID (integer).</p>
+<pre><code>fx_id = vicon.GetDeviceChannelIDFromName(plate_id, force_out, 'Fx')</code></pre>
+        </article>
+
+        <h2 id="channel">Device channel data</h2>
+
+        <p>
+          The six read methods combine two dimensions: <strong>local / global coordinates</strong>, and
+          <strong>whole channel / single frame / "aligned to an optical frame"</strong>.
+        </p>
+
+        <table>
+          <thead><tr><th style="width:190px">Coordinate system</th><th style="width:230px">Whole channel</th><th style="width:230px">Single frame (sample frame number)</th><th>Single optical frame (aligned)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Local (relative to the device)</td>
+              <td><a href="#GetDeviceChannel"><code>GetDeviceChannel</code></a></td>
+              <td><a href="#GetDeviceChannelAtFrame"><code>GetDeviceChannelAtFrame</code></a></td>
+              <td><a href="#GetDeviceChannelForFrame"><code>GetDeviceChannelForFrame</code></a></td>
+            </tr>
+            <tr>
+              <td>Global (world coordinates)</td>
+              <td><a href="#GetDeviceChannelGlobal"><code>GetDeviceChannelGlobal</code></a></td>
+              <td><a href="#GetDeviceChannelGlobalAtFrame"><code>GetDeviceChannelGlobalAtFrame</code></a></td>
+              <td><a href="#GetDeviceChannelGlobalForFrame"><code>GetDeviceChannelGlobalForFrame</code></a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>AtFrame vs. ForFrame</b>
+          <code>…AtFrame</code> indexes by <strong>device sample frame</strong>; <code>…ForFrame</code> indexes by
+          <strong>optical frame</strong> and returns the group of samples corresponding to that optical frame. For biomechanical analysis and alignment with markers, use
+          <code>Global</code> + <code>ForFrame</code>.
+        </div>
+
+        <article class="api-item" id="GetDeviceChannel">
+          <h3>GetDeviceChannel<span class="sig">(deviceID, deviceOutputID, channelID)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads the whole channel (local coordinates).</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code> —
+            <code>channelData</code> is a <code>list[float]</code>, length = frame count × samples per frame;
+            <code>ready</code> is a <code>bool</code>; <code>rate</code> is a <code>float</code> (Hz).</p>
+<pre><code>data, ready, rate = vicon.GetDeviceChannel(plate_id, force_out, fx_id)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelAtFrame">
+          <h3>GetDeviceChannelAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads all samples for a device sample frame by frame number.</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code> —
+            <code>channelData</code> length = samples per frame.</p>
+<pre><code>samples, ready, rate = vicon.GetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelForFrame">
+          <h3>GetDeviceChannelForFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads the sample data corresponding to an <strong>optical frame</strong>.</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code>.</p>
+<pre><code># Same time base as the markers
+samples, ready, rate = vicon.GetDeviceChannelForFrame(plate_id, force_out, fx_id, 200)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobal">
+          <h3>GetDeviceChannelGlobal<span class="sig">(deviceID, deviceOutputID, channelID)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads the whole channel and transforms coordinates/directions into the world coordinate system. Only this version is physically meaningful for forces, moments and CoP.</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code>.</p>
+<pre><code>fz, ready, rate = vicon.GetDeviceChannelGlobal(plate_id, force_out, fz_id)</code></pre>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobalAtFrame">
+          <h3>GetDeviceChannelGlobalAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads samples in global coordinates by device sample frame number.</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code>.</p>
+        </article>
+
+        <article class="api-item" id="GetDeviceChannelGlobalForFrame">
+          <h3>GetDeviceChannelGlobalForFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame)</span><span class="kind">Read</span></h3>
+          <p class="desc">Reads samples in global coordinates by optical frame.</p>
+          <p class="ret"><strong>Returns</strong> <code>(channelData, ready, rate)</code>.</p>
+        </article>
+
+        <article class="api-item" id="SetDeviceChannel">
+          <h3>SetDeviceChannel<span class="sig">(deviceID, deviceOutputID, channelID, channelData)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes the whole channel. <strong>Use this method for bulk edits</strong>; it is much faster than frame-by-frame calls.</p>
+          <p class="desc">
+            Frames marked as "missing" in the raw capture cannot be written: they read as 0 and writes to them are ignored, but
+            <code>channelData</code> must still cover every sample.
+          </p>
+          <table>
+            <thead><tr><th style="width:150px">Parameter</th><th style="width:170px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>channelData</code></td><td>list[float]</td><td>Length = frame count × samples per frame.</td></tr>
+            </tbody>
+          </table>
+<pre><code>import math
+
+for device_id in vicon.GetDeviceIDs():
+    name, dtype, rate, out_ids, plate, et = vicon.GetDeviceDetails(device_id)
+    if dtype != 'ForcePlate':
+        continue
+    force_out = vicon.GetDeviceOutputIDFromName(device_id, 'Force')
+    _, _, _, _, _, ch = vicon.GetDeviceOutputDetails(device_id, force_out)
+    fx = vicon.GetDeviceChannel(device_id, force_out, ch[0])[0]
+    fy = vicon.GetDeviceChannel(device_id, force_out, ch[1])[0]
+    fz = vicon.GetDeviceChannel(device_id, force_out, ch[2])[0]
+
+    # Treat anything below 25 N as noise and zero it
+    mag = [math.sqrt(a * a + b * b + c * c) for a, b, c in zip(fx, fy, fz)]
+    for i, m in enumerate(mag):
+        if m &lt; 25.0:
+            fx[i] = fy[i] = fz[i] = 0.0
+
+    vicon.SetDeviceChannel(device_id, force_out, ch[0], fx)
+    vicon.SetDeviceChannel(device_id, force_out, ch[1], fy)
+    vicon.SetDeviceChannel(device_id, force_out, ch[2], fz)</code></pre>
+        </article>
+
+        <article class="api-item" id="SetDeviceChannelAtFrame">
+          <h3>SetDeviceChannelAtFrame<span class="sig">(deviceID, deviceOutputID, channelID, frame, channelData)</span><span class="kind">Write</span></h3>
+          <p class="desc">Writes the single-channel samples for one frame (length = samples per frame).</p>
+          <div class="warn">
+            <b>Performance</b>
+            The source explicitly warns that frame-by-frame calls can be significantly slower than one <code>SetDeviceChannel</code>.
+            Prefer whole-channel writes for bulk edits.
+          </div>
+<pre><code>fx, _, _ = vicon.GetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200)
+fx = [v / 2.0 for v in fx]
+vicon.SetDeviceChannelAtFrame(plate_id, force_out, fx_id, 200, fx)</code></pre>
+        </article>
+        <h2 id="spline">Spline</h2>
+
+        <p>
+          The spline interface is for smooth differentiation of discrete trajectories: first submit valid scattered points to the spline object, then request the 1st (velocity)
+          or 2nd (acceleration) derivative as needed. A <code>ViconNexus</code> instance has only one spline object,
+          <strong>and each new submission overwrites the previous one</strong>.
+        </p>
+
+        <article class="api-item" id="SubmitSplineTrajectory">
+          <h3>SubmitSplineTrajectory<span class="sig">(frames, xData, yData, zData, frameRate)</span><span class="kind">Write</span></h3>
+          <p class="desc">Initializes (or reinitializes) the spline object with scattered points. <strong>Submit only valid points</strong>:
+            frames with gaps will corrupt the fit, so filter by <code>e</code> first.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>frames</code></td><td>list[int]</td><td>Frame numbers of the scattered points (1-based).</td></tr>
+              <tr><td><code>xData</code>, <code>yData</code>, <code>zData</code></td><td>list[float]</td><td>Coordinates (mm); length must match <code>frames</code>.</td></tr>
+              <tr><td><code>frameRate</code></td><td>float</td><td>Data frame rate (Hz), used for the time base when computing derivatives.</td></tr>
+            </tbody>
+          </table>
+<pre><code>frame_rate = vicon.GetFrameRate()
+start, end = vicon.GetTrialRange()
+frames = list(range(start, end + 1))
+
+x, y, z, e = vicon.GetTrajectory('Colin', 'LKNE')
+valid = [i for i, ok in enumerate(e) if ok]
+
+vicon.SubmitSplineTrajectory(
+    [frames[i] for i in valid],
+    [x[i] for i in valid],
+    [y[i] for i in valid],
+    [z[i] for i in valid],
+    frame_rate)
+
+vx, vy, vz = vicon.GetSplineResults(1)      # velocity
+ax, ay, az = vicon.GetSplineResults(2)      # acceleration</code></pre>
+        </article>
+
+        <article class="api-item" id="GetSplineResults">
+          <h3>GetSplineResults<span class="sig">(derivative)</span><span class="kind">Read</span></h3>
+          <p class="desc">Gets the requested derivative order from the current spline object.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>derivative</code></td><td>int</td><td>Derivative order: <code>1</code> = velocity, <code>2</code> = acceleration.</td></tr></tbody>
+          </table>
+          <p class="ret"><strong>Returns</strong> <code>(x, y, z)</code> — three <code>list[float]</code> values with the same length as the number of submitted points.</p>
+          <div class="note">
+            <b>Incorrect docstring</b>
+            The <code>GetSplineResults</code> docstring lists <code>frames/x/y/z/frameRate</code>
+            again (copied from <code>SubmitSplineTrajectory</code>); the method actually takes only one parameter, <code>derivative</code>.
+          </div>
+        </article>
+
+        <h2 id="trialops">Trial operations</h2>
+
+        <p>
+          These four methods let an external Python process act as a remote control for Nexus.
+          <strong>They cannot be called from a script running inside Nexus</strong>, or they will deadlock or fail outright.
+        </p>
+
+        <article class="api-item" id="RunPipeline">
+          <h3>RunPipeline<span class="sig">(pipeline, location, timeout)</span><span class="kind">Host</span></h3>
+          <p class="desc">Runs a Nexus Processing Pipeline. If a pipeline is already running, this call fails.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:130px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>pipeline</code></td><td>str</td><td>Name of an existing pipeline.</td></tr>
+              <tr><td><code>location</code></td><td>str</td><td>Pipeline location: <code>'Private'</code>, <code>'Shared'</code>, <code>'System'</code>; pass an empty string <code>''</code> to use the default search.</td></tr>
+              <tr><td><code>timeout</code></td><td>int</td><td>Client-side timeout in seconds. <strong>A timeout only makes the client return early</strong>; the host pipeline keeps running.</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.RunPipeline('Reconstruct', '', 45)
+vicon.RunPipeline('MyLabeling', 'Private', 120)</code></pre>
+        </article>
+
+        <article class="api-item" id="OpenTrial">
+          <h3>OpenTrial<span class="sig">(trial, timeout)</span><span class="kind">Host</span></h3>
+          <p class="desc">Opens a trial in the host. Failure conditions: a pipeline is running, Nexus is in live mode,
+            the corresponding <code>.ENF</code> file cannot be found, or the host currently disallows opening.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:150px">Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>trial</code></td><td>str</td><td>Absolute path to the trial, <strong>without the extension</strong>.</td></tr>
+              <tr><td><code>timeout</code></td><td>int</td><td>Client-side timeout in seconds.</td></tr>
+            </tbody>
+          </table>
+<pre><code>vicon.CloseTrial(30)
+vicon.OpenTrial(r'C:\Users\Public\Documents\Vicon\Nexus Sample Data'
+                r'\Colin\Walking Trials\Walking 2', 30)</code></pre>
+          <div class="warn">
+            <b>Unsaved data triggers a dialog</b>
+            If the current trial has unsaved changes, the host's save prompt will block automation.
+            Call <code>SaveTrial()</code> or <code>CloseTrial()</code> before batch processing.
+          </div>
+        </article>
+
+        <article class="api-item" id="SaveTrial">
+          <h3>SaveTrial<span class="sig">(timeout)</span><span class="kind">Host</span></h3>
+          <p class="desc">Saves the current trial to disk. Fails while a pipeline is running or in live mode.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>timeout</code></td><td>int</td><td>Client-side timeout in seconds.</td></tr></tbody>
+          </table>
+<pre><code>vicon.SaveTrial(30)</code></pre>
+        </article>
+
+        <article class="api-item" id="CloseTrial">
+          <h3>CloseTrial<span class="sig">(timeout)</span><span class="kind">Host</span></h3>
+          <p class="desc">Closes the current trial <strong>without saving</strong>. Fails while a pipeline is running or in live mode.</p>
+          <table>
+            <thead><tr><th style="width:110px">Parameter</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>timeout</code></td><td>int</td><td>Client-side timeout in seconds.</td></tr></tbody>
+          </table>
+<pre><code>vicon.CloseTrial(30)</code></pre>
+        </article>
+
+        <h2 id="errors">Exceptions &amp; switches</h2>
+
+        <article class="api-item" id="ViconNexusException">
+          <h3>ViconNexusException<span class="sig">(message, additional='')</span><span class="kind">Exception</span></h3>
+          <p class="desc">
+            <code>viconnexusapi.ViconNexus.ViconNexusException</code>, derived from <code>Exception</code>.
+            It is designed to represent SDK errors, but <strong>in the current 1.0.3 release the public methods almost never raise it</strong>:
+            the vast majority of failures print to stderr. A few paths, such as <code>CreateSubjectParam</code>, may raise it indirectly.
+          </p>
+          <table>
+            <thead><tr><th style="width:130px">Attribute</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>message</code></td><td>Primary error message.</td></tr>
+              <tr><td><code>additional</code></td><td>Additional detail; defaults to an empty string.</td></tr>
+            </tbody>
+          </table>
+          <p class="ret"><strong><code>str(exc)</code></strong> returns <code>message</code>,
+            and when <code>additional</code> is present it concatenates them as <code>message + ' ' + additional</code>.</p>
+<pre><code>from viconnexusapi.ViconNexus import ViconNexusException
+
+try:
+    vicon.SetSubjectActive('Nobody', True)
+except ViconNexusException as exc:
+    print('SDK error:', exc.message, exc.additional)</code></pre>
+        </article>
+
+        <article class="api-item" id="GenerateErrors">
+          <h3>GenerateErrors<span class="sig">property (default True)</span><span class="kind">Control</span></h3>
+          <p class="desc">
+            Controls whether the underlying <code>ResultString()</code> is printed to
+            <code>stderr</code> when the low-level call returns <code>Error()</code>. You can temporarily disable it during batch automation to reduce noise, but you must validate results yourself.
+          </p>
+<pre><code>vicon.GenerateErrors = False
+try:
+    vicon.SetSubjectActive('Nobody', True)   # fails silently
+finally:
+    vicon.GenerateErrors = True</code></pre>
+          <div class="tip">
+            <b>Recommended error-handling pattern</b>
+            Disable printing → call → immediately read back and validate (for example <code>HasTrajectory</code>, <code>GetModelOutputNames</code>)
+            → record the failures. The return values themselves carry no error state.
+          </div>
+        </article>
+
+        <article class="api-item" id="Client">
+          <h3>Client<span class="sig">property</span><span class="kind">Control</span></h3>
+          <p class="desc">
+            The underlying <code>ViconNexusClient</code> instance. Commands that the facade does not wrap (for example
+            <code>GetCommandList</code>, <code>ProcessRequest</code>, <code>AllocString</code>)
+            can be reached directly here; return values are raw <code>Output_*</code> objects.
+            See <a href="api-lowlevel.html">low-level client</a>.
+          </p>
+<pre><code>raw = vicon.Client.GetCommandInfo('GetTrajectory')
+print(raw.ResultString().Value())</code></pre>
+        </article>
+      </main>
+
+      <aside class="toc" id="toc"></aside>
+    </div>
+
+    <footer class="site">
+      <span>Vicon Nexus Python SDK · Documentation</span>
+      <span>SDK version 1.0.3</span>
+      <span>MIT License · SDK © 2020 Vicon Motion Systems Ltd</span>
+    </footer>
+  </div>
+</div>
+<script src="assets/nav.js"></script>
+<script src="assets/search-index.en.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
